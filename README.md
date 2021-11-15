@@ -12,7 +12,7 @@ We hope this work can help and ease the transition for future researchers' movin
 
 ### Organization
 
-The repository is organized as follows. In the main page you will find one folder for each paper whose structural estimates our notebooks are intened to replicate. The naming convention we use for each of these folders is authors-journal-year where "journal" is the journal where the paper was published and "year" is the year of publication. Each folder contains three sub-folders named: code, input and output. Code contains the notebooks to replicate the main estimates of the  papers. The Python notebook has extension .IPYNB while the Julia notebook has extension .jl. Input contains all the data used in the notebooks to replicate the estimates. Output contains the results obtained running the notebooks in .csv format.
+This repository contains one folder for each paper whose structural estimates our notebooks are intended to replicate. The naming convention we use for each of these folders is authors-journal-year where "journal" is the journal where the paper was published and "year" is the year of publication. Each folder contains three sub-folders named: code, input and output. Code contains the notebooks to replicate the main estimates of the  papers. The Python notebook has extension .IPYNB while the Julia notebook has extension .jl. Input contains all the data used in the notebooks to replicate the estimates. Output contains the results obtained running the notebooks in .csv format.
 
 ### Papers
 
