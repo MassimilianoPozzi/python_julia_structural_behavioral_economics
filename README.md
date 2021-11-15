@@ -16,7 +16,7 @@ This repository contains one folder for each paper whose structural estimates ou
 
 ### Papers
 
-As of right now this repository contains only the notebooks to replicate the aggregate estimates of Bruhin, Fehr, and Schunk (*Journal of the European Economic Association*, 2019). However, more papers will be uploaded soon. We have already written and tested the code for the following papers: 
+As of right now this repository contains only the notebooks to replicate the aggregate estimates of Bruhin, Fehr, and Schunk (*Journal of the European Economic Association*, 2019). However, more notebooks and papers will be uploaded soon. We have already written and tested the code to replicate the structural estimates in the following papers: 
 
 - Augenblick, Ned and Matthew Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", *Review of Economic Studies*, 86(3): 941&ndash;975
 	- Estimation Methods: Maximum Likelihood (with Bootstrapped Standard Errors)
