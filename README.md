@@ -1,6 +1,6 @@
 # Structural Behavioral Economics with Python and Julia
 
-### Introduction:
+### Introduction
 
 Here you will find Python and Julia notebooks to replicate the structural estimates of a set of papers in the field of Behavioral Economics. Following DellaVigna (*Hanbdook of Behavioral Economics*, 2018), we define structural as *"the estimation of a model on data that recovers estimates (and confidence intervals) for some key behavioral parameters"*. [Python](https://www.python.org) and [Julia](https://julialang.org) are two programming languages that offer some perks compared to others often used by economists, since they are:
 
@@ -12,13 +12,13 @@ Here you will find Python and Julia notebooks to replicate the structural estima
 
 We hope this work can help and ease the transition for future researchers' moving from Stata, R and Matlab to Python and Julia.
 
-### Organization:
+### Organization
 
-<div align= "justify"> The repository is organized as follows. In the main page you will find one folder for each paper whose structural estimates our notebooks are intened to replicate. The naming convention we use for each of these folders is authors-journal-year where "journal" is the journal where the paper was published and "year" is the year of publication. Each folder contains three sub-folders named: code, input and output. Code contains the notebooks to replicate the main estimates of the  papers. The Python notebook has extension .IPYNB while the Julia notebook has extension .jl. Input contains all the data used in the notebooks to replicate the estimates. Output contains the results obtained running the notebooks in .csv format. </div>
+The repository is organized as follows. In the main page you will find one folder for each paper whose structural estimates our notebooks are intened to replicate. The naming convention we use for each of these folders is authors-journal-year where "journal" is the journal where the paper was published and "year" is the year of publication. Each folder contains three sub-folders named: code, input and output. Code contains the notebooks to replicate the main estimates of the  papers. The Python notebook has extension .IPYNB while the Julia notebook has extension .jl. Input contains all the data used in the notebooks to replicate the estimates. Output contains the results obtained running the notebooks in .csv format.
 
-### Papers:
+### Papers
 
-<div align= "justify"> As of right now this repository contains only the notebooks to replicate the aggregate estimates of Bruhin, Fehr, and Schunk (*Journal of the European Economic Association*, 2019). However, more papers will be uploaded soon. We have already written and tested the code for the following papers: </div>
+As of right now this repository contains only the notebooks to replicate the aggregate estimates of Bruhin, Fehr, and Schunk (*Journal of the European Economic Association*, 2019). However, more papers will be uploaded soon. We have already written and tested the code for the following papers: 
 
 <br>
 
