@@ -22,7 +22,7 @@ As of right now this repository contains only the notebooks to replicate the agg
 	- Estimation Methods: Maximum Likelihood (with Bootstrapped Standard Errors)
 - Bruhin, Adrian, Ernst Fehr, and Daniel Schunk, 2019, "The mMny Faces of Human Sociality: Uncovering the Distribution and Stability of Social Preferences", *Journal of the European Economic Association*, 17(4): 1025&ndash;1069
 	- Estimation Methods: Maximum Likelihood and EM-Algorithm for Mixture Model
-- DellaVigna, Stefano and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 2018, 85(2): 1029&ndash;1069
+- DellaVigna, Stefano and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 85(2): 1029&ndash;1069
 	- Estimation Methods: GMM (with Bootstrapped Standard Errors) and Non-Linear-Least-Squares
 - DellaVigna, Stefano, John A. List, Ulrike Malmendier, and Gautam Rao, 2017, "Voting To Tell Others", *Review of Economic Studies*, 84(1): 143&ndash;181
 	- Estimation Methods: Simulated Method of Moments			
