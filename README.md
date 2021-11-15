@@ -2,7 +2,7 @@
 
 ### Introduction:
 
-<div align= "justify"> Here you will find Python and Julia notebooks to replicate the structural estimates of a set of papers in the field of Behavioral Economics. Following DellaVigna (*Hanbdook of Behavioral Economics*, 2018), we define structural as *"the estimation of a model on data that recovers estimates (and confidence intervals) for some key behavioral parameters"*. [Python](https://www.python.org) and [Julia](https://julialang.org) are two programming languages that offer some perks compared to others often used by economists, since they are: </div>
+Here you will find Python and Julia notebooks to replicate the structural estimates of a set of papers in the field of Behavioral Economics. Following DellaVigna (*Hanbdook of Behavioral Economics*, 2018), we define structural as *"the estimation of a model on data that recovers estimates (and confidence intervals) for some key behavioral parameters"*. [Python](https://www.python.org) and [Julia](https://julialang.org) are two programming languages that offer some perks compared to others often used by economists, since they are:
 
 <br>
 
