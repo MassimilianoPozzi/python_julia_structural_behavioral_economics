@@ -19,7 +19,7 @@ This repository contains one folder for each paper whose structural estimates ou
 As of right now this repository contains only the notebooks to replicate the aggregate estimates of Bruhin, Fehr, and Schunk (*Journal of the European Economic Association*, 2019). However, more papers will be uploaded soon. We have already written and tested the code for the following papers: 
 
 - Augenblick, Ned and Matthew Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", *Review of Economic Studies*, 86(3): 941&ndash;975
- - Estimation Methods: Maximum Likelihood (with Bootstrapped Standard Errors)
+	- Estimation Methods: Maximum Likelihood (with Bootstrapped Standard Errors)
 - Bruhin, Adrian, Ernst Fehr, and Daniel Schunk, 2019, "The mMny Faces of Human Sociality: Uncovering the Distribution and Stability of Social Preferences", *Journal of the European Economic Association*, 17(4): 1025&ndash;1069
  - Estimation Methods: Maximum Likelihood and EM-Algorithm for Mixture Model
 - DellaVigna, Stefano and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 2018, 85(2): 1029&ndash;1069
