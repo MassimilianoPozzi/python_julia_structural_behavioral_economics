@@ -1,6 +1,6 @@
-,param,estimates_s1,standarderr_s1,estimates_s2,standarderr_s2
-0,α,0.083,0.015,0.098,0.013
-1,β,0.261,0.019,0.245,0.019
-2,γ,0.072,0.014,0.029,0.01
-3,δ,-0.042,0.011,-0.043,0.008
-4,σ,0.016,0.001,0.019,0.001
+,parameters,estimates_s1,standarderr_s1,z-stat_s1,p-val_s1,estimates_s2,standarderr_s2,z-stat_s2,p-val_s2,p-val_s1s2
+0,α: Weight on other's payoff when behind,0.083,0.015,5.635,0.0,0.098,0.013,7.659,0.0,0.468
+1,β: Weight on other's payoff when ahead,0.261,0.019,13.868,0.0,0.245,0.019,13.216,0.0,0.551
+2,γ: Measure of positive reciprocity,0.072,0.014,5.311,0.0,0.029,0.01,3.014,0.003,0.01
+3,δ: Measure of negative reciprocity,-0.042,0.011,-3.687,0.0,-0.043,0.008,-5.101,0.0,0.919
+4,σ: Choice sensitivity,0.016,0.001,21.172,0.0,0.019,0.001,20.172,0.0,0.006
