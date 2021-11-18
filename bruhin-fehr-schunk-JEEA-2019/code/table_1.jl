@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.0
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,7 @@ using InteractiveUtils
 # ╔═╡ a0736b60-3c7d-11ec-1b71-27fd38cbf6e4
 begin
 
-# Import packages used. We load both Optim and JuMP to compare how they work.
+# Import the necessary packages
 
 using Distributions
 using DelimitedFiles
@@ -15,7 +15,6 @@ using DataFrames
 using Optim
 using CSV
 using Random
-using Distributions
 using Statistics
 using FiniteDiff
 using LinearAlgebra
@@ -26,32 +25,31 @@ import Ipopt
 end
 
 # ╔═╡ 7b7526d0-3c9d-11ec-3575-37a66c520386
-# The code in this notebook performs the aggregate estimates (table 1) for the model in the paper 'The Many Faces of Human Sociality: Uncovering the Distribution and Stability 
-# of Social Preferences' by Adrian Bruhin, Ernst Fehr and Daniel Schunk (JEEA-2019).
+# Replication of Bruhin, Fehr, and Schunk, 2019, "Many Faces of Human Sociality: Uncovering the Distribution and Stability of Social Preferences"
 
 # ╔═╡ 7b36490e-3c9d-11ec-1ea6-dbf0082362dc
 # Authors: 
-# Massimiliano Pozzi (pozzi.massimiliano@studbocconi.it)
-# Salvatore Nunnari (salvatore.nunnari@unibocconi.it)
+# Massimiliano Pozzi (Bocconi University, pozzi.massimiliano@studbocconi.it)
+# Salvatore Nunnari (Bocconi University, https://snunnari.github.io, salvatore.nunnari@unibocconi.it)
 
 # ╔═╡ c7fb5b79-7d87-49c5-9459-a360e1057715
-# Starting and ending each cell with begin/end is necessary when using Pluto but not when using Neptune
+# This notebook works with both Neptune and Pluto; the "begin" and "end" tags in each cell are necessary for Pluto notebooks but do not play any role in Neptune 
 
 # ╔═╡ e0965590-3c7d-11ec-13b6-a7d15db3fd9f
 begin
 
-# 1. Data cleaning and data preparation
+# 1. Data Cleaning and Preparation
 
-# We import the relevant dataset containing the data on the 39 dictator games and 78 reciprocity games in Session 1. We then remove from the dataset those subjects that behaved very inconsistenly throughout the games. These subjects are identified from the individual estimates that we do not run in this notebook. dropped_subjects_section4paragraph2.csv contains the id of these subjects.
+# We import the relevant datasets containing the data on the 39 dictator games and 78 reciprocity games in Session 1 and Session 2. As the authors, we remove from these datasets those subjects that behaved very inconsistenly throughout the games. These subjects are identified from the individual estimates that we do not run in this notebook. The file "dropped_subjects_section4paragraph2.csv" contains the ID of these subjects.
 
-# Load the data on Session 1 and create a nice DataFrame
+# Import data for session 1 and create a DataFrame
 data, header = readdlm(raw"../input/choices_exp1.csv",',',header=true)
 dt1 = DataFrame(data, vec(header))
 
-# Load dropped_subjects_section4paragraph2.csv 
+# Import data with ID of subjects to drop
 data_drop = readdlm(raw"../input/dropped_subjects_section4paragraph2.csv",',',header=false)
 	
-# drop the session 1 subjects whose IDs are listed in the data_drop dataframe (14 individuals)
+# Drop the session 1 subjects whose IDs are listed in the data_drop dataframe (14 individuals)
 
 dt1 = dt1[[i for i=1:length(dt1.sid) if !(dt1.sid[i] in(data_drop))],:]
 	
@@ -68,7 +66,7 @@ indicators_y = hcat(dt1.s_y,dt1.r_y,dt1.q,dt1.v)
 end;
 
 # ╔═╡ 56a26400-422c-11ec-3599-77a4d3d0e180
-# Define the function to minimize. This is the negative of the log likelihood of observing our data given the parameters of the model. For more information refer to equation (4) and (5) in the paper or the python notebook
+# Define the function to minimize. This is the negative of the log likelihood of observing our data given the parameters of the model. For more information refer to equation (4) and (5) in the paper or the python notebook in this repository
 
 # v is the vector of parameters (θ,σ)
 # y is the choice of the player
@@ -85,7 +83,7 @@ function loglikeM(v,y,self_x, other_x, self_y,other_y,indicators_x,indicators_y)
 	uleft  = sigma.*( (1 .-lli) .*self_x .+lli .*other_x) # utility when choosing allocation X (left)
 	uright = sigma.*( (1 .-rli) .*self_y .+rli .*other_y) # utility when choosing 	allocation Y (right)
 	
-	# probs is a vector 1x18720 containing the likelihood of observing the data of a single game
+	# probs is a 1x18720 vector containing the likelihood of observing the data of a single game
 	probs  = (exp.(uleft)./(exp.(uleft).+exp.(uright))).^y .* (exp.(uright)./
 		(exp.(uleft).+exp.(uright))).^(1 .-y)
 	nll = -sum(log.(probs)) # negative log-likelihood
@@ -95,7 +93,7 @@ function loglikeM(v,y,self_x, other_x, self_y,other_y,indicators_x,indicators_y)
 # ╔═╡ dfcceb10-3c7d-11ec-2664-9d36301add75
 begin
 
-# initialize random starting guesses. Same random initial guesses as in the R code
+# initialize random starting guesses. Same random initial guesses as in the authors' R code
 
 beta_init = rand(Uniform(0.01,0.02),4) # close to zero for α, β, γ, δ
 sigma_init = log.(rand(Uniform(0.05,0.8),1)/mean([mean(dt1.self_x),mean(dt1.other_x),mean(dt1.self_y),mean(dt1.other_y)])) # log since in function we take exp
@@ -124,7 +122,8 @@ vloglike_s1 = -Optim.minimum(sol) # Value of loglikelihood evaluated in the mini
 end
 
 # ╔═╡ f576544e-3d55-11ec-009e-5ddcc502108b
-# Compute the individual cluster robust standard errors. The formula is the following:
+# Compute the individual cluster robust standard errors. 
+# The formula is the following:
 
 # adj * (inv_hessian * grad_con * inv_hessian). 
 
@@ -182,7 +181,6 @@ begin
 
 inverse_hessian_s1 = sol.trace[end].metadata["~inv(H)"] 
 
-
 # Compute the hessian numerically using the ForwardDiff package 
 inv_hess_num = inv(ForwardDiff.hessian(ll,res_s1)) 
 
@@ -207,7 +205,7 @@ end
 # ╔═╡ 9e5d90a0-3cb2-11ec-2efc-8189c078aee7
 begin
 
-# Load the data for Session 2 and remove the dropped subjects as before
+# Import session 2 data and remove subjects to drop as we did for session 1 above
 
 data2, header2 = readdlm(raw"../input/choices_exp2.csv",',',header=true)
 dt2 = DataFrame(data2, vec(header2))
@@ -264,7 +262,7 @@ end
 # ╔═╡ c32cedfe-daf7-4b0b-81bc-e8028a050294
 begin
 
-# Hypothesis testing
+# Hypothesis Testing
 
 # We now do some hypothesis testing on the parameters we obtained in session 1 and session 2. We first compute the z-test statistics and the corresponding p-values to check if each parameter we obtained is statistically different from zero. We then compute the p-value of a z-test to check if the parameters we obtained in session 1 are statistically different from the parameters we obtained in session 2.
 
