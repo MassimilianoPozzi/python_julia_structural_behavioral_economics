@@ -31,7 +31,7 @@ As of right now this repository contains only the notebooks to replicate the agg
 	- Modeling of Heterogeneity: Random Utility, Finite Mixture
 - Stefano DellaVigna and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 85(2): 1029&ndash;1069
 	- Estimation Methods: GMM (with Bootstrapped Standard Errors) and Non-Linear-Least-Squares
-	- Modeling of Heterogeneity: Random Noise on marginal cost of effort for Non-Linear-Least-Squares specification
+	- Modeling of Heterogeneity: Random Utility for Non-Linear-Least-Squares
 - Stefano DellaVigna, John A. List, Ulrike Malmendier, and Gautam Rao, 2017, "Voting To Tell Others", *Review of Economic Studies*, 84(1): 143&ndash;181
 	- Estimation Methods: Simulated Method of Moments
 	- Modeling of Heterogeneity: Random Parameters			
