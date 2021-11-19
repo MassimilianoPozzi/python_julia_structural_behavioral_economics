@@ -363,9 +363,12 @@ alpha,beta,gamma,delta,sigma= nothing, nothing, nothing, nothing, nothing
 	
 optimize!(model)
 solution_summary(model)
+	
 end
 
 # ╔═╡ bbe59950-4915-11ec-289a-c97076f93ca1
+begin
+
 # In this cell we show that the point estimates for Session 1 are the same when using Optim or JuMP
 
 JuMP_s1 = [round(value(alpha), digits=3); round(value(beta), digits=3); round(value(gamma), digits=3); round(value(delta), digits=3); round(exp(value(sigma)), digits=3)]
@@ -375,6 +378,8 @@ table_diff.parameters = parameters_name
 table_diff.Optim_s1 = round.(results_s1, digits=3)
 table_diff.JuMP_s1  = JuMP_s1
 table_diff
+	
+end
 
 # ╔═╡ e071b690-3c7d-11ec-0911-bd86ef5668aa
 # We write here the same negative log-likelihood function as before written using a loop over all observations. This is slower but could be interesting to see
