@@ -35,6 +35,12 @@ end
 # ╔═╡ c7fb5b79-7d87-49c5-9459-a360e1057715
 # This notebook works with both Neptune and Pluto; the "begin" and "end" tags in each cell are necessary for Pluto notebooks but do not play any role in Neptune 
 
+# ╔═╡ 7d517760-4913-11ec-24fb-03122e4dda9a
+# This notebook was tested with the following packages versions:
+
+# Pozzi: julia 1.6.1, Pluto 0.14.7, Neptune 0.14.0, Distributions 0.25.17, DataFrames 1.2.2, Optim 1.4.1, CSV 0.9.5, FiniteDiff 2.8.1, ForwardDiff 0.10.20, JuMP 0.21.10
+
+
 # ╔═╡ e0965590-3c7d-11ec-13b6-a7d15db3fd9f
 begin
 
@@ -236,7 +242,7 @@ end
 sol2 = optimize(ll2,v0,method=BFGS(),iterations = 10000,store_trace=true, extended_trace=true, autodiff=:forward)
 res_s2 = Optim.minimizer(sol2)
 results_s2 = [res_s2[1:4];exp(res_s2[5])]
-vloglike_s2 = -Optim.minimum(sol)
+vloglike_s2 = -Optim.minimum(sol2)
 	
 end
 
@@ -317,6 +323,8 @@ table1.pval_s1s2 = round.(pvalues_s1s2, digits=3)
 
 CSV.write(raw"../output/table1_julia.csv", table1)
 	
+table1
+	
 end
 
 # ╔═╡ 4ee3a2da-1a91-450b-97d8-4108fa08944e
@@ -357,6 +365,17 @@ optimize!(model)
 solution_summary(model)
 end
 
+# ╔═╡ bbe59950-4915-11ec-289a-c97076f93ca1
+# In this cell we show that the point estimates for Session 1 are the same when using Optim or JuMP
+
+JuMP_s1 = [round(value(alpha), digits=3); round(value(beta), digits=3); round(value(gamma), digits=3); round(value(delta), digits=3); round(exp(value(sigma)), digits=3)]
+
+table_diff = DataFrame()
+table_diff.parameters = parameters_name
+table_diff.Optim_s1 = round.(results_s1, digits=3)
+table_diff.JuMP_s1  = JuMP_s1
+table_diff
+
 # ╔═╡ e071b690-3c7d-11ec-0911-bd86ef5668aa
 # We write here the same negative log-likelihood function as before written using a loop over all observations. This is slower but could be interesting to see
 
@@ -381,6 +400,7 @@ end
 # ╠═7b7526d0-3c9d-11ec-3575-37a66c520386
 # ╠═7b36490e-3c9d-11ec-1ea6-dbf0082362dc
 # ╠═c7fb5b79-7d87-49c5-9459-a360e1057715
+# ╠═7d517760-4913-11ec-24fb-03122e4dda9a
 # ╠═a0736b60-3c7d-11ec-1b71-27fd38cbf6e4
 # ╠═e0965590-3c7d-11ec-13b6-a7d15db3fd9f
 # ╠═d8928282-3c85-11ec-00ca-c5215c731b33
@@ -398,4 +418,5 @@ end
 # ╠═c32cedfe-daf7-4b0b-81bc-e8028a050294
 # ╠═802c89c0-3d60-11ec-1d69-0dcf94880bf3
 # ╠═4ee3a2da-1a91-450b-97d8-4108fa08944e
+# ╠═bbe59950-4915-11ec-289a-c97076f93ca1
 # ╠═e071b690-3c7d-11ec-0911-bd86ef5668aa
