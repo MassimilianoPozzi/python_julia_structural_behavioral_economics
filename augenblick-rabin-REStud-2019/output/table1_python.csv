@@ -1,0 +1,8 @@
+,parameters,estimates,standarderr
+0,Present Bias β,0.835,0.04
+1,Naive Pres. Bias β_h,0.999,0.011
+2,Discount Factor δ,1.003,0.003
+3,Cost Curvature γ,2.145,0.076
+4,Cost Slope ϕ,723.974,249.042
+5,Proj Task Reduction α,7.307,2.702
+6,Sd of error term σ,42.625,3.314
