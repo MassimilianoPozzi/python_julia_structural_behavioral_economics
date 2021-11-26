@@ -7,7 +7,7 @@
 
 ### About
 
-This repository contains Python and Julia notebooks to replicate the structural estimates of a set of papers in the field of Behavioral Economics. Following DellaVigna (*Handbook of Behavioral Economics*, 2018), we define structural as *"the estimation of a model on data that recovers estimates (and confidence intervals) for some key behavioral parameters"*. [Python](https://www.python.org) and [Julia](https://julialang.org) are two programming languages that offer some advantages compared to others often used by economists, namely, they are free and open source (which promotes replicability, since anybody with a computer can set up the environment and run the code) and are easy to read (and to write in!). While the main disadvantage of Python (with respect to, e.g., Matlab) is its speed, Julia is blazingly fast. We hope this resource can help and ease the transition for researchers' moving from Stata, R and Matlab to Python and Julia.
+This repository contains Python and Julia notebooks to replicate the structural estimates of a set of papers in the field of Behavioral Economics. Following DellaVigna (*Handbook of Behavioral Economics*, 2018), we define structural as *"the estimation of a model on data that recovers estimates (and confidence intervals) for some key behavioral parameters"*. [Python](https://www.python.org) and [Julia](https://julialang.org) are two programming languages that offer some advantages compared to others often used by economists, namely, they are free and open source (which promotes replicability, since anybody with a computer can set up the environment and run the code) and are easy to read (and to write in!). While the main disadvantage of Python (with respect to, e.g., Matlab) is its speed, Julia is blazingly fast. We hope this resource can help other researchers and ease the transition from Stata, R and Matlab to Python and Julia.
 
 ### How Do I Navigate This Repository?
 
@@ -32,15 +32,15 @@ Right now, this repository contains only the notebooks to replicate the aggregat
 
 We chose these papers to replicate because (a) they were recently published in general interest journals and, as such, they constitute the state-of-the-art in structural behavioral economics, (b) the replication files are available on the journal's website, and (c) they allow us to explore a wide array of different estimation methods and sources of heterogeneity (the two building blocks of a structural model, as discussed in Sections 4.1 and 4.2 of DellaVigna 2018 and detailed in the list above).
  
-### Where Can I Learn More On Python?
+### Where Can I Learn More About Python?
 
 - [Learn Python in Y Minutes](https://learnxinyminutes.com/docs/python/)
 
-### Where Can I Learn More On Julia?
+### Where Can I Learn More About Julia?
 
 - [Learn Julia in Y Minutes](https://learnxinyminutes.com/docs/julia/)
 
-### Where Can I Learn More On Structural Models?
+### Where Can I Learn More About Structural Models?
  
  - DellaVigna, Stefano, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
  - Holmes, Thomas and Holger Sieg, 2015, ["Structural Estimation in Urban Economics"](http://snunnari.github.io/holmes.pdf), *Handbook of Regional and Urban Economics Vol. 5*, Elsevier, 69-114
