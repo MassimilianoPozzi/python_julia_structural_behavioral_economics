@@ -38,7 +38,7 @@ As of right now this repository contains only the notebooks to replicate the agg
 
 We chose these papers to replicate because (a) they were recently published in general interest journals and, as such, they constitute the state-of-the-art in structural behavioral economics, (b) the replication files are available on the journal's website, and (c) they allow us to explore a wide array of different estimation methods and sources of heterogeneity (the two building blocks of a structural model, as discussed in Sections 4.1 and 4.2 of DellaVigna 2018 and detailed in the list above).
  
- ### References on Structural Models in Economics
+ ### References on Structural Estimation
  
  - DellaVigna, Stefano, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
  - Holmes, Thomas and Holger Sieg, 2015, ["Structural Estimation in Urban Economics"](http://snunnari.github.io/holmes.pdf), *Handbook of Regional and Urban Economics Vol. 5*, Elsevier, 69-114
