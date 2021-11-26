@@ -41,6 +41,8 @@ We chose these papers to replicate because (a) they were recently published in g
  ### References on Structural Models in Economics
  
  - DellaVigna, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
+ - Keane, Todd, and Wolpin, 2011, ["The Structural Estimation of Behavioral Models: Discrete Choice Dynamic Programming Methods and Applications"](http://snunnari.github.io/keane.pdf), *Handbook of Labor Economics Vol. 4*, Elsevier, 331&ndash;461
  - Low and Meghir, 2017, ["The Use of Structural Models in Econometrics"](http://snunnari.github.io/low.pdf), *Journal of Economic Perspectives*, 31(2): 33&ndash;58
  - McLachlan, Lee, and Rathnayake, 2019, ["Finite Mixture Models"](http://snunnari.github.io/mclachlan.pdf), *Annual Review of Statistics and Its Application*, 6: 355&ndash;378
  - Reiss and Wolak, 2007, ["Structural Econometric Modeling: Rationales and Examples from Industrial Organization"](http://snunnari.github.io/reiss.pdf), *Handbook of Econometrics*, 6: 4277&ndash;4415
+ - Todd and Wolpin, 2010, ["Structural Estimation and Policy Evaluation in Developing Countries"](http://snunnari.github.io/todd.pdf), *Annual Review of Economics*, 2:21&ndash;50
