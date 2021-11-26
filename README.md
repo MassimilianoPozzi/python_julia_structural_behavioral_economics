@@ -40,4 +40,4 @@ We chose these papers to replicate because (a) they were recently published in g
  
  ### References on Structural Models in Economics
  
- - DellaVigna, Stefano, 2018, "Structural Behavioral Economics", *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723 [[Paper]](http://snunnari.github.io/dellavigna2018)
+ - DellaVigna, Stefano, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna2018), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
