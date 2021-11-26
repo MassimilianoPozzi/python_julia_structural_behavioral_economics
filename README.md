@@ -40,7 +40,7 @@ We chose these papers to replicate because (a) they were recently published in g
  
  ### References on Structural Models in Economics
  
- - DellaVigna, Stefano, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
- - Low, Hamish, and Costas Meghir, 2017, ["The Use of Structural Models in Econometrics"](http://snunnari.github.io/low.pdf), *Journal of Economic Perspectives*, 31(2): 33&ndash;58
- - McLachlan, Geoffrey J., Sharon X. Lee, and Suren I. Rathnayake, 2019, ["Finite Mixture Models"](http://snunnari.github.io/mclachlan.pdf), *Annual Review of Statistics and Its Application*, 6: 355&ndash;378
- - Reiss, Peter C., and Frank A. Wolak, 2007, ["Structural Econometric Modeling: Rationales and Examples from Industrial Organization"](http://snunnari.github.io/reiss.pdf), *Handbook of Econometrics*, 6: 4277&ndash;4415
+ - DellaVigna, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
+ - Low and Meghir, 2017, ["The Use of Structural Models in Econometrics"](http://snunnari.github.io/low.pdf), *Journal of Economic Perspectives*, 31(2): 33&ndash;58
+ - McLachlan, Lee, and Rathnayake, 2019, ["Finite Mixture Models"](http://snunnari.github.io/mclachlan.pdf), *Annual Review of Statistics and Its Application*, 6: 355&ndash;378
+ - Reiss and Wolak, 2007, ["Structural Econometric Modeling: Rationales and Examples from Industrial Organization"](http://snunnari.github.io/reiss.pdf), *Handbook of Econometrics*, 6: 4277&ndash;4415
