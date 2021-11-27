@@ -45,6 +45,7 @@ We chose these papers to replicate because (a) they were recently published in g
 - [Learn Julia in Y Minutes](https://learnxinyminutes.com/docs/julia/)
 - [Quantitative Economics with Julia](https://julia.quantecon.org/intro.html)
 - [The Fast Track To Julia](https://juliadocs.github.io/Julia-Cheat-Sheet/)
+- [Computational Economics for PhDs](https://floswald.github.io/NumericalMethods/) (Florian Oswald)
 
 ### Where Can I Learn More About Structural Models?
  
