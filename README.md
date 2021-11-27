@@ -35,6 +35,10 @@ We chose these papers to replicate because (a) they were recently published in g
 ### Where Can I Learn More About Python?
 
 - [Learn Python in Y Minutes](https://learnxinyminutes.com/docs/python/)
+- [Quantitative Economics with Python](https://quantecon.org/python-lectures/)
+- [Python for Econometrics, Statistics and Numerical Analysis](https://www.kevinsheppard.com/teaching/python/notes/) (Kevin Sheppard)
+- [PyEcon](https://pyecon.org)
+- [Python Data Science Handbook](https://jakevdp.github.io/PythonDataScienceHandbook/)
 
 ### Where Can I Learn More About Julia?
 
