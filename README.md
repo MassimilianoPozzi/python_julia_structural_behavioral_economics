@@ -39,7 +39,9 @@ We chose these papers to replicate because (a) they were recently published in g
 ### Where Can I Learn More About Julia?
 
 - [Learn Julia in Y Minutes](https://learnxinyminutes.com/docs/julia/)
-- [Quantitative Economics with Julia](https://julia.quantecon.org/intro.html)
+- [Quantitative Economics with Julia](
+- [The Fast Track To Julia](https://juliadocs.github.io/Julia-Cheat-Sheet/)
+
 ### Where Can I Learn More About Structural Models?
  
  - DellaVigna, Stefano, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
