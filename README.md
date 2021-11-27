@@ -39,7 +39,7 @@ We chose these papers to replicate because (a) they were recently published in g
 ### Where Can I Learn More About Julia?
 
 - [Learn Julia in Y Minutes](https://learnxinyminutes.com/docs/julia/)
-- [Quantitative Economics with Julia](
+- [Quantitative Economics with Julia](https://julia.quantecon.org/intro.html)
 - [The Fast Track To Julia](https://juliadocs.github.io/Julia-Cheat-Sheet/)
 
 ### Where Can I Learn More About Structural Models?
