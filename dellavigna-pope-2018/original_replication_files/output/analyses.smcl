@@ -1,0 +1,1587 @@
+{smcl}
+{txt}{sf}{ul off}{.-}
+      name:  {res}<unnamed>
+       {txt}log:  {res}C:/Users/Avner/Dropbox/forecastExp/Data Analysis/Analysis/behavioral/output/analyses.smcl
+  {txt}log type:  {res}smcl
+ {txt}opened on:  {res} 4 Apr 2017, 15:33:38
+{txt}
+{com}. 
+. ************************************************************
+. * Run NLS for both power and exponential cost function
+. 
+. 
+. ** Models and treatments included in estimation
+. global models POWER EXPON
+{txt}
+{com}. //global specifications Bench Bench_fix088 All_wo_prob_weighting No_pweight_fix088 All_fix_088 All_estim
+. global precision = 1e-15 // Default is 1e-5
+{txt}
+{com}. 
+. // Table 5:
+. // A col 2 - power 3 (k,s,gamma)
+. // A col 4 - exp 3 + 3 specifications for the low pay
+. // B col 3 - power - k,s,gamma,a,alpha,s_ge,beta,delta
+. // B col 6 - exp   - k,s,gamma,a,alpha,s_ge,beta,delta
+. 
+. 
+. global specificationsT5 Bench All_nopweight
+{txt}
+{com}.         preserve
+{txt}
+{com}. 
+.         gen buttonpresses_nearest100 = round(buttonpresses, 100)
+{txt}
+{com}.         replace buttonpresses_nearest100 = 25 if buttonpresses_nearest100 == 0
+{txt}(44 real changes made)
+
+{com}.         label variable buttonpresses_nearest100 "Effort"
+{txt}
+{com}.         * Log of rounded button presses
+.         gen logbuttonpresses_nearest100 = ln(buttonpresses_nearest100)  
+{txt}
+{com}.         label variable logbuttonpresses_nearest100 "Log effort"
+{txt}
+{com}.         
+.         foreach model of global models {c -(}
+{txt}  2{com}.                 
+.         * Cost function specifications          
+.                 if ("`model'" == "POWER") {c -(}
+{txt}  3{com}.                         local depvar logbuttonpresses_`rounding'
+{txt}  4{com}.                         global st_values `"k 1.66306e-10 gamma 19.8117987 s 7.74996"'
+{txt}  5{com}.                         local k_scaler = 1e+57
+{txt}  6{com}.                         local s_scaler = 1e+6
+{txt}  7{com}.                 {c )-}
+{txt}  8{com}.                 
+.                 if ("`model'" == "EXPON") {c -(}
+{txt}  9{com}.                         local depvar buttonpresses_`rounding'
+{txt} 10{com}.                         global st_values `"k 1.69443 gamma 0.015645717 s 3.69198"'
+{txt} 11{com}.                         local k_scaler = 1e+16
+{txt} 12{com}.                         local s_scaler = 1e+6
+{txt} 13{com}.                 {c )-}
+{txt} 14{com}. 
+.         eststo clear
+{txt} 15{com}. 
+.         foreach spec in $specificationsT5 {c -(}
+{txt} 16{com}.                 if "`spec'" == "Bench" {c -(} 
+{txt} 17{com}.                 // col 1
+.                         local sample1 `""1.1", "1.2""'
+{txt} 18{com}.                         local sample2 `""1.3""'
+{txt} 19{com}.                         local sample Benchmark
+{txt} 20{com}.                         local alpha = 1
+{txt} 21{com}.                         local a = 1
+{txt} 22{com}.                         local beta = 1
+{txt} 23{com}.                         local delta = 1
+{txt} 24{com}.                         local p_weight = 1
+{txt} 25{com}.                         local curv = 1
+{txt} 26{com}.                         local gift = 1
+{txt} 27{com}.                         local stval_spec
+{txt} 28{com}.                 {c )-}                               
+{txt} 29{com}.         if "`spec'" == "All_nopweight" {c -(} 
+{txt} 30{com}.                 local sample1 `""1.1", "1.2", "1.3", "3.1", "3.2""'
+{txt} 31{com}.                 local sample2 `""4.1", "4.2", "10""'
+{txt} 32{com}.                 local sample Bench_Social_Time_Gift
+{txt} 33{com}.                 local alpha = `"{c -(}alpha{c )-}"'
+{txt} 34{com}.                 local a = `"{c -(}a{c )-}"'
+{txt} 35{com}.                 local beta = `"{c -(}beta{c )-}"'
+{txt} 36{com}.                 local delta = `"{c -(}delta{c )-}"'
+{txt} 37{com}.                 local p_weight = 1
+{txt} 38{com}.                 local curv = 1
+{txt} 39{com}.                 local gift `"{c -(}gift{c )-}"'
+{txt} 40{com}.                 local stval_spec `"alpha 0.003 a 0.13 beta 1.16 delta 0.75 gift 5e-6"'
+{txt} 41{com}.         {c )-}       
+{txt} 42{com}. 
+.         * Run model
+.         ** Use nl default for standard errors (Gauss-Newton)
+. 
+.         tempvar sample_dummy
+{txt} 43{com}.         g `sample_dummy' = 1 if inlist(treatment, `sample1')
+{txt} 44{com}.         replace `sample_dummy' = 1 if inlist(treatment, `sample2')
+{txt} 45{com}. 
+.         nl (`depvar' = -1/{c -(}gamma{c )-} * ln({c -(}k{c )-}/`k_scaler') + 1/ {c -(}gamma{c )-}*ln({c -(}s{c )-}/`s_scaler'+`gift'*0.4*gift_dummy + `beta'^delay_dummy*`delta'^delay_wks*`p_weight'^weight_dummy*prob*payoff_per_100^`curv'+`alpha'*payoff_charity_per_100+`a'*0.01*dummy_charity)) ///
+>         if `sample_dummy' == 1, initial($st_values `stval_spec') noc robust eps($precision)
+{txt} 46{com}. 
+.                         predict effort_hat_`spec'_`model'
+{txt} 47{com}.                                                         
+.                         * Store results
+.                         capt eststo `spec'_`model'
+{txt} 48{com}.                         capt estadd local sam `"`sample'"': `spec'_`model'
+{txt} 49{com}.                         capt estadd local mod `model': `spec'_`model'
+{txt} 50{com}.                         capt estadd local spec `spec': `spec'_`model'
+{txt} 51{com}.                                 capt estadd scalar scaling_k = `k_scaler' : `spec'_`model'
+{txt} 52{com}.                                 capt estadd scalar scaling_s = `s_scaler' : `spec'_`model'
+{txt} 53{com}.                         local prediction = 1
+{txt} 54{com}.                         foreach treatment in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 55{com}.                                 sum effort_hat_`spec'_`model' if treatment == "`treatment'", mean
+{txt} 56{com}.                                 capt estadd scalar pred_`prediction' = r(mean): `spec'_`model'
+{txt} 57{com}.                                 local ++prediction
+{txt} 58{com}.                         {c )-}
+{txt} 59{com}.                         //drop effort_hat
+.                         
+.         {c )-}
+{txt} 60{com}. * Report results
+. 
+. // levelsof treatment, l(treatments)
+. local tablenote1
+{txt} 61{com}. local tablenote2
+{txt} 62{com}. foreach t in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 63{com}.         sum buttonpresses_nearest100 if treatment == "`t'", mean
+{txt} 64{com}.         local avg = int(`r(mean)')
+{txt} 65{com}.         local tablenote1 `"`tablenote1' ''`t''': `avg', "'
+{txt} 66{com}. {c )-}
+{txt} 67{com}. foreach t in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 68{com}.         sum logbuttonpresses_nearest100 if treatment == "`t'", mean
+{txt} 69{com}.         local avg = round(`r(mean)',0.001)
+{txt} 70{com}.         local tablenote2 `"`tablenote2' ''`t''': `avg', "'
+{txt} 71{com}. 
+. {c )-}
+{txt} 72{com}. 
+. capt esttab _all using "${c -(}main{c )-}/output/NLS_results_Table5_`model'", nogaps replace ///
+> csv label b(a8) se(a8) r2(4) ar2(4) nostar ///
+> scalars("sam Sample" "mod Cost function" "spec Specification" "scaling_k Coef. k scaled up by" "scaling_s Coef. s scaled up by" "rss RSS" "rmse Root MSE" "msr Residual mean square" ///
+> "dev Residual deviance" "ic \# iterations" "pred_1 Predicted effort 1.1" /// 
+>  "pred_2 Predicted effort 1.2" "pred_3 Predicted effort 1.3" "pred_4 Predicted effort 1.4" "pred_5 Predicted effort 2" ///
+>  "pred_6 Predicted effort 3.1" "pred_7 Predicted effort 3.2" "pred_8 Predicted effort 4.1" ///
+>  "pred_9 Predicted effort 4.2" "pred_10 Predicted effort 6.1" "pred_11 Predicted effort 6.2") ///
+>  nonotes addnotes("Sample average effort: `tablenote1'" "Sample average log effort: `tablenote2'")
+{txt} 73{com}. 
+. eststo clear
+{txt} 74{com}. {c )-}
+{txt}(8737 missing values generated)
+(540 real changes made)
+(obs = 1664)
+
+Iteration 0:  residual SS = {res} 673.1097
+{txt}Iteration 1:  residual SS = {res}  673.098
+{txt}Iteration 2:  residual SS = {res}  673.085
+{txt}Iteration 3:  residual SS = {res} 673.0708
+{txt}Iteration 4:  residual SS = {res} 673.0555
+{txt}Iteration 5:  residual SS = {res} 673.0392
+{txt}Iteration 6:  residual SS = {res} 673.0218
+{txt}Iteration 7:  residual SS = {res} 673.0035
+{txt}Iteration 8:  residual SS = {res} 672.9843
+{txt}Iteration 9:  residual SS = {res} 672.9642
+{txt}Iteration 10:  residual SS = {res} 672.9435
+{txt}Iteration 11:  residual SS = {res}  672.922
+{txt}Iteration 12:  residual SS = {res}    672.9
+{txt}Iteration 13:  residual SS = {res} 672.8775
+{txt}Iteration 14:  residual SS = {res} 672.8545
+{txt}Iteration 15:  residual SS = {res} 672.8312
+{txt}Iteration 16:  residual SS = {res} 672.8076
+{txt}Iteration 17:  residual SS = {res} 672.7839
+{txt}Iteration 18:  residual SS = {res} 672.7601
+{txt}Iteration 19:  residual SS = {res} 672.7362
+{txt}Iteration 20:  residual SS = {res} 672.7125
+{txt}Iteration 21:  residual SS = {res} 672.6889
+{txt}Iteration 22:  residual SS = {res} 672.6656
+{txt}Iteration 23:  residual SS = {res} 672.6426
+{txt}Iteration 24:  residual SS = {res} 672.6201
+{txt}Iteration 25:  residual SS = {res} 672.5982
+{txt}Iteration 26:  residual SS = {res} 672.5768
+{txt}Iteration 27:  residual SS = {res} 672.5562
+{txt}Iteration 28:  residual SS = {res} 672.5365
+{txt}Iteration 29:  residual SS = {res} 672.5176
+{txt}Iteration 30:  residual SS = {res} 672.4998
+{txt}Iteration 31:  residual SS = {res} 672.4832
+{txt}Iteration 32:  residual SS = {res} 672.4678
+{txt}Iteration 33:  residual SS = {res} 672.4537
+{txt}Iteration 34:  residual SS = {res} 672.4411
+{txt}Iteration 35:  residual SS = {res} 672.4301
+{txt}Iteration 36:  residual SS = {res} 672.4209
+{txt}Iteration 37:  residual SS = {res} 672.4134
+{txt}Iteration 38:  residual SS = {res}  672.408
+{txt}Iteration 39:  residual SS = {res} 672.4046
+{txt}Iteration 40:  residual SS = {res} 672.4035
+{txt}Iteration 41:  residual SS = {res} 672.3987
+{txt}Iteration 42:  residual SS = {res} 672.3946
+{txt}Iteration 43:  residual SS = {res} 672.3913
+{txt}Iteration 44:  residual SS = {res} 672.3886
+{txt}Iteration 45:  residual SS = {res} 672.3867
+{txt}Iteration 46:  residual SS = {res} 672.3856
+{txt}Iteration 47:  residual SS = {res} 672.3853
+{txt}Iteration 48:  residual SS = {res} 672.3843
+{txt}Iteration 49:  residual SS = {res} 672.3835
+{txt}Iteration 50:  residual SS = {res} 672.3829
+{txt}Iteration 51:  residual SS = {res} 672.3825
+{txt}Iteration 52:  residual SS = {res} 672.3824
+{txt}Iteration 53:  residual SS = {res} 672.3821
+{txt}Iteration 54:  residual SS = {res} 672.3819
+{txt}Iteration 55:  residual SS = {res} 672.3818
+{txt}Iteration 56:  residual SS = {res} 672.3817
+{txt}Iteration 57:  residual SS = {res} 672.3817
+{txt}Iteration 58:  residual SS = {res} 672.3816
+{txt}Iteration 59:  residual SS = {res} 672.3816
+{txt}Iteration 60:  residual SS = {res} 672.3815
+{txt}Iteration 61:  residual SS = {res} 672.3815
+{txt}Iteration 62:  residual SS = {res} 672.3815
+{txt}Iteration 63:  residual SS = {res} 672.3815
+{txt}Iteration 64:  residual SS = {res} 672.3815
+{txt}Iteration 65:  residual SS = {res} 672.3815
+{txt}Iteration 66:  residual SS = {res} 672.3815
+{txt}Iteration 67:  residual SS = {res} 672.3815
+{txt}Iteration 68:  residual SS = {res} 672.3815
+{txt}Iteration 69:  residual SS = {res} 672.3815
+{txt}Iteration 70:  residual SS = {res} 672.3815
+{txt}Iteration 71:  residual SS = {res} 672.3815
+{txt}Iteration 72:  residual SS = {res} 672.3815
+{txt}Iteration 73:  residual SS = {res} 672.3815
+{txt}Iteration 74:  residual SS = {res} 672.3815
+{txt}Iteration 75:  residual SS = {res} 672.3815
+{txt}Iteration 76:  residual SS = {res} 672.3815
+{txt}Iteration 77:  residual SS = {res} 672.3815
+{txt}Iteration 78:  residual SS = {res} 672.3815
+{txt}Iteration 79:  residual SS = {res} 672.3815
+{txt}Iteration 80:  residual SS = {res} 672.3815
+{txt}Iteration 81:  residual SS = {res} 672.3815
+{txt}Iteration 82:  residual SS = {res} 672.3815
+{txt}Iteration 83:  residual SS = {res} 672.3815
+{txt}Iteration 84:  residual SS = {res} 672.3815
+{txt}Iteration 85:  residual SS = {res} 672.3815
+{txt}Iteration 86:  residual SS = {res} 672.3815
+{txt}Iteration 87:  residual SS = {res} 672.3815
+{txt}Iteration 88:  residual SS = {res} 672.3815
+{txt}Iteration 89:  residual SS = {res} 672.3815
+{txt}Iteration 90:  residual SS = {res} 672.3815
+{txt}Iteration 91:  residual SS = {res} 672.3815
+{txt}Iteration 92:  residual SS = {res} 672.3815
+{txt}Iteration 93:  residual SS = {res} 672.3815
+{txt}Iteration 94:  residual SS = {res} 672.3815
+{txt}Iteration 95:  residual SS = {res} 672.3815
+{txt}Iteration 96:  residual SS = {res} 672.3815
+{txt}Iteration 97:  residual SS = {res} 672.3815
+{txt}Iteration 98:  residual SS = {res} 672.3815
+{txt}Iteration 99:  residual SS = {res} 672.3815
+{txt}Iteration 100:  residual SS = {res} 672.3815
+{txt}Iteration 101:  residual SS = {res} 672.3815
+{txt}Iteration 102:  residual SS = {res} 672.3815
+{txt}Iteration 103:  residual SS = {res} 672.3815
+{txt}Iteration 104:  residual SS = {res} 672.3815
+{txt}Iteration 105:  residual SS = {res} 672.3815
+{txt}Iteration 106:  residual SS = {res} 672.3815
+{txt}Iteration 107:  residual SS = {res} 672.3815
+{txt}Iteration 108:  residual SS = {res} 672.3815
+{txt}Iteration 109:  residual SS = {res} 672.3815
+{txt}Iteration 110:  residual SS = {res} 672.3815
+{txt}Iteration 111:  residual SS = {res} 672.3815
+{txt}Iteration 112:  residual SS = {res} 672.3815
+{txt}Iteration 113:  residual SS = {res} 672.3815
+{txt}Iteration 114:  residual SS = {res} 672.3815
+{txt}Iteration 115:  residual SS = {res} 672.3815
+{txt}Iteration 116:  residual SS = {res} 672.3815
+{txt}Iteration 117:  residual SS = {res} 672.3815
+{txt}Iteration 118:  residual SS = {res} 672.3815
+{txt}Iteration 119:  residual SS = {res} 672.3815
+{txt}Iteration 120:  residual SS = {res} 672.3815
+{txt}Iteration 121:  residual SS = {res} 672.3815
+{txt}Iteration 122:  residual SS = {res} 672.3815
+{txt}Iteration 123:  residual SS = {res} 672.3815
+{txt}Iteration 124:  residual SS = {res} 672.3815
+{txt}Iteration 125:  residual SS = {res} 672.3815
+{txt}Iteration 126:  residual SS = {res} 672.3815
+{txt}Iteration 127:  residual SS = {res} 672.3815
+{txt}Iteration 128:  residual SS = {res} 672.3815
+{txt}Iteration 129:  residual SS = {res} 672.3815
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     1664
+{txt}{col 54}R-squared     = {res}   0.9927
+{txt}{col 54}Adj R-squared = {res}   0.9927
+{txt}{col 54}Root MSE      = {res} .6360516
+{txt}{col 54}Res. dev.     = {res} 3214.388
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}logbutto~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} 20.54619{col 26}{space 2} 5.265515{col 37}{space 1}    3.90{col 46}{space 3}0.000{col 54}{space 4} 10.21845{col 67}{space 3} 30.87393
+{txt}          /k {c |}{col 14}{res}{space 2} 5.12e-13{col 26}{space 2} 2.36e-11{col 37}{space 1}    0.02{col 46}{space 3}0.983{col 54}{space 4}-4.57e-11{col 67}{space 3} 4.67e-11
+{txt}          /s {c |}{col 14}{res}{space 2} 3.168075{col 26}{space 2} 8.156653{col 37}{space 1}    0.39{col 46}{space 3}0.698{col 54}{space 4}-12.83032{col 67}{space 3} 19.16647
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(7094 missing values generated)
+(1639 real changes made)
+(obs = 4406)
+
+Iteration 0:  residual SS = {res} 1543.723
+{txt}Iteration 1:  residual SS = {res} 1543.468
+{txt}Iteration 2:  residual SS = {res} 1543.295
+{txt}Iteration 3:  residual SS = {res} 1543.184
+{txt}Iteration 4:  residual SS = {res} 1543.117
+{txt}Iteration 5:  residual SS = {res} 1543.082
+{txt}Iteration 6:  residual SS = {res}  1543.07
+{txt}Iteration 7:  residual SS = {res} 1543.008
+{txt}Iteration 8:  residual SS = {res} 1542.949
+{txt}Iteration 9:  residual SS = {res} 1542.891
+{txt}Iteration 10:  residual SS = {res} 1542.835
+{txt}Iteration 11:  residual SS = {res} 1542.781
+{txt}Iteration 12:  residual SS = {res} 1542.729
+{txt}Iteration 13:  residual SS = {res} 1542.678
+{txt}Iteration 14:  residual SS = {res} 1542.629
+{txt}Iteration 15:  residual SS = {res} 1542.582
+{txt}Iteration 16:  residual SS = {res} 1542.538
+{txt}Iteration 17:  residual SS = {res} 1542.495
+{txt}Iteration 18:  residual SS = {res} 1542.454
+{txt}Iteration 19:  residual SS = {res} 1542.415
+{txt}Iteration 20:  residual SS = {res} 1542.379
+{txt}Iteration 21:  residual SS = {res} 1542.345
+{txt}Iteration 22:  residual SS = {res} 1542.313
+{txt}Iteration 23:  residual SS = {res} 1542.284
+{txt}Iteration 24:  residual SS = {res} 1542.258
+{txt}Iteration 25:  residual SS = {res} 1542.235
+{txt}Iteration 26:  residual SS = {res} 1542.215
+{txt}Iteration 27:  residual SS = {res} 1542.198
+{txt}Iteration 28:  residual SS = {res} 1542.185
+{txt}Iteration 29:  residual SS = {res} 1542.176
+{txt}Iteration 30:  residual SS = {res}  1542.17
+{txt}Iteration 31:  residual SS = {res}  1542.17
+{txt}Iteration 32:  residual SS = {res} 1542.162
+{txt}Iteration 33:  residual SS = {res} 1542.157
+{txt}Iteration 34:  residual SS = {res} 1542.152
+{txt}Iteration 35:  residual SS = {res} 1542.149
+{txt}Iteration 36:  residual SS = {res} 1542.147
+{txt}Iteration 37:  residual SS = {res} 1542.146
+{txt}Iteration 38:  residual SS = {res} 1542.145
+{txt}Iteration 39:  residual SS = {res} 1542.144
+{txt}Iteration 40:  residual SS = {res} 1542.143
+{txt}Iteration 41:  residual SS = {res} 1542.142
+{txt}Iteration 42:  residual SS = {res} 1542.142
+{txt}Iteration 43:  residual SS = {res} 1542.142
+{txt}Iteration 44:  residual SS = {res} 1542.141
+{txt}Iteration 45:  residual SS = {res} 1542.141
+{txt}Iteration 46:  residual SS = {res} 1542.141
+{txt}Iteration 47:  residual SS = {res} 1542.141
+{txt}Iteration 48:  residual SS = {res} 1542.141
+{txt}Iteration 49:  residual SS = {res} 1542.141
+{txt}Iteration 50:  residual SS = {res} 1542.141
+{txt}Iteration 51:  residual SS = {res} 1542.141
+{txt}Iteration 52:  residual SS = {res} 1542.141
+{txt}Iteration 53:  residual SS = {res} 1542.141
+{txt}Iteration 54:  residual SS = {res} 1542.141
+{txt}Iteration 55:  residual SS = {res} 1542.141
+{txt}Iteration 56:  residual SS = {res} 1542.141
+{txt}Iteration 57:  residual SS = {res} 1542.141
+{txt}Iteration 58:  residual SS = {res} 1542.141
+{txt}Iteration 59:  residual SS = {res} 1542.141
+{txt}Iteration 60:  residual SS = {res} 1542.141
+{txt}Iteration 61:  residual SS = {res} 1542.141
+{txt}Iteration 62:  residual SS = {res} 1542.141
+{txt}Iteration 63:  residual SS = {res} 1542.141
+{txt}Iteration 64:  residual SS = {res} 1542.141
+{txt}Iteration 65:  residual SS = {res} 1542.141
+{txt}Iteration 66:  residual SS = {res} 1542.141
+{txt}Iteration 67:  residual SS = {res} 1542.141
+{txt}Iteration 68:  residual SS = {res} 1542.141
+{txt}Iteration 69:  residual SS = {res} 1542.141
+{txt}Iteration 70:  residual SS = {res} 1542.141
+{txt}Iteration 71:  residual SS = {res} 1542.141
+{txt}Iteration 72:  residual SS = {res} 1542.141
+{txt}Iteration 73:  residual SS = {res} 1542.141
+{txt}Iteration 74:  residual SS = {res} 1542.141
+{txt}Iteration 75:  residual SS = {res} 1542.141
+{txt}Iteration 76:  residual SS = {res} 1542.141
+{txt}Iteration 77:  residual SS = {res} 1542.141
+{txt}Iteration 78:  residual SS = {res} 1542.141
+{txt}Iteration 79:  residual SS = {res} 1542.141
+{txt}Iteration 80:  residual SS = {res} 1542.141
+{txt}Iteration 81:  residual SS = {res} 1542.141
+{txt}Iteration 82:  residual SS = {res} 1542.141
+{txt}Iteration 83:  residual SS = {res} 1542.141
+{txt}Iteration 84:  residual SS = {res} 1542.141
+{txt}Iteration 85:  residual SS = {res} 1542.141
+{txt}Iteration 86:  residual SS = {res} 1542.141
+{txt}Iteration 87:  residual SS = {res} 1542.141
+{txt}Iteration 88:  residual SS = {res} 1542.141
+{txt}Iteration 89:  residual SS = {res} 1542.141
+{txt}Iteration 90:  residual SS = {res} 1542.141
+{txt}Iteration 91:  residual SS = {res} 1542.141
+{txt}Iteration 92:  residual SS = {res} 1542.141
+{txt}Iteration 93:  residual SS = {res} 1542.141
+{txt}Iteration 94:  residual SS = {res} 1542.141
+{txt}Iteration 95:  residual SS = {res} 1542.141
+{txt}Iteration 96:  residual SS = {res} 1542.141
+{txt}Iteration 97:  residual SS = {res} 1542.141
+{txt}Iteration 98:  residual SS = {res} 1542.141
+{txt}Iteration 99:  residual SS = {res} 1542.141
+{txt}Iteration 100:  residual SS = {res} 1542.141
+{txt}Iteration 101:  residual SS = {res} 1542.141
+{txt}Iteration 102:  residual SS = {res} 1542.141
+{txt}Iteration 103:  residual SS = {res} 1542.141
+{txt}Iteration 104:  residual SS = {res} 1542.141
+{txt}Iteration 105:  residual SS = {res} 1542.141
+{txt}Iteration 106:  residual SS = {res} 1542.141
+{txt}Iteration 107:  residual SS = {res} 1542.141
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     4406
+{txt}{col 54}R-squared     = {res}   0.9937
+{txt}{col 54}Adj R-squared = {res}   0.9937
+{txt}{col 54}Root MSE      = {res} .5920863
+{txt}{col 54}Res. dev.     = {res} 7878.287
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}logbutto~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} 20.51815{col 26}{space 2} 5.251387{col 37}{space 1}    3.91{col 46}{space 3}0.000{col 54}{space 4} 10.22279{col 67}{space 3} 30.81351
+{txt}          /k {c |}{col 14}{res}{space 2} 5.71e-13{col 26}{space 2} 2.59e-11{col 37}{space 1}    0.02{col 46}{space 3}0.982{col 54}{space 4}-5.02e-11{col 67}{space 3} 5.14e-11
+{txt}          /s {c |}{col 14}{res}{space 2} 3.269767{col 26}{space 2} 8.382349{col 37}{space 1}    0.39{col 46}{space 3}0.696{col 54}{space 4}-13.16386{col 67}{space 3} 19.70339
+{txt}       /gift {c |}{col 14}{res}{space 2} .0000204{col 26}{space 2} .0000451{col 37}{space 1}    0.45{col 46}{space 3}0.652{col 54}{space 4} -.000068{col 67}{space 3} .0001087
+{txt}       /beta {c |}{col 14}{res}{space 2} 1.357935{col 26}{space 2}    1.489{col 37}{space 1}    0.91{col 46}{space 3}0.362{col 54}{space 4}-1.561255{col 67}{space 3} 4.277124
+{txt}      /delta {c |}{col 14}{res}{space 2} .7494928{col 26}{space 2} .2490011{col 37}{space 1}    3.01{col 46}{space 3}0.003{col 54}{space 4} .2613252{col 67}{space 3}  1.23766
+{txt}      /alpha {c |}{col 14}{res}{space 2} .0064462{col 26}{space 2} .0155707{col 37}{space 1}    0.41{col 46}{space 3}0.679{col 54}{space 4}-.0240802{col 67}{space 3} .0369726
+{txt}          /a {c |}{col 14}{res}{space 2}  .181825{col 26}{space 2} .1827371{col 37}{space 1}    1.00{col 46}{space 3}0.320{col 54}{space 4}-.1764317{col 67}{space 3} .5400817
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(8737 missing values generated)
+(540 real changes made)
+(obs = 1664)
+
+Iteration 0:  residual SS = {res} 7.10e+08
+{txt}Iteration 1:  residual SS = {res} 7.10e+08
+{txt}Iteration 2:  residual SS = {res} 7.10e+08
+{txt}Iteration 3:  residual SS = {res} 7.10e+08
+{txt}Iteration 4:  residual SS = {res} 7.10e+08
+{txt}Iteration 5:  residual SS = {res} 7.10e+08
+{txt}Iteration 6:  residual SS = {res} 7.10e+08
+{txt}Iteration 7:  residual SS = {res} 7.10e+08
+{txt}Iteration 8:  residual SS = {res} 7.10e+08
+{txt}Iteration 9:  residual SS = {res} 7.10e+08
+{txt}Iteration 10:  residual SS = {res} 7.10e+08
+{txt}Iteration 11:  residual SS = {res} 7.10e+08
+{txt}Iteration 12:  residual SS = {res} 7.10e+08
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     1664
+{txt}{col 54}R-squared     = {res}   0.8976
+{txt}{col 54}Adj R-squared = {res}   0.8974
+{txt}{col 54}Root MSE      = {res} 653.5781
+{txt}{col 54}Res. dev.     = {res} 26292.86
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} .0156411{col 26}{space 2} .0039089{col 37}{space 1}    4.00{col 46}{space 3}0.000{col 54}{space 4} .0079742{col 67}{space 3}  .023308
+{txt}          /k {c |}{col 14}{res}{space 2} 1.709267{col 26}{space 2} 14.10305{col 37}{space 1}    0.12{col 46}{space 3}0.904{col 54}{space 4}-25.95236{col 67}{space 3}  29.3709
+{txt}          /s {c |}{col 14}{res}{space 2} 3.722259{col 26}{space 2} 8.806829{col 37}{space 1}    0.42{col 46}{space 3}0.673{col 54}{space 4} -13.5514{col 67}{space 3} 20.99591
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(7094 missing values generated)
+(1639 real changes made)
+(obs = 4406)
+
+Iteration 0:  residual SS = {res} 1.87e+09
+{txt}Iteration 1:  residual SS = {res} 1.87e+09
+{txt}Iteration 2:  residual SS = {res} 1.87e+09
+{txt}Iteration 3:  residual SS = {res} 1.87e+09
+{txt}Iteration 4:  residual SS = {res} 1.87e+09
+{txt}Iteration 5:  residual SS = {res} 1.87e+09
+{txt}Iteration 6:  residual SS = {res} 1.87e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     4406
+{txt}{col 54}R-squared     = {res}   0.8953
+{txt}{col 54}Adj R-squared = {res}   0.8951
+{txt}{col 54}Root MSE      = {res} 651.3759
+{txt}{col 54}Res. dev.     = {res} 69589.39
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} .0156411{col 26}{space 2} .0039089{col 37}{space 1}    4.00{col 46}{space 3}0.000{col 54}{space 4} .0079776{col 67}{space 3} .0233045
+{txt}          /k {c |}{col 14}{res}{space 2} 1.709267{col 26}{space 2} 14.10314{col 37}{space 1}    0.12{col 46}{space 3}0.904{col 54}{space 4}-25.93999{col 67}{space 3} 29.35853
+{txt}          /s {c |}{col 14}{res}{space 2} 3.722259{col 26}{space 2} 8.806885{col 37}{space 1}    0.42{col 46}{space 3}0.673{col 54}{space 4}-13.54367{col 67}{space 3} 20.98819
+{txt}       /gift {c |}{col 14}{res}{space 2} .0000235{col 26}{space 2} .0000469{col 37}{space 1}    0.50{col 46}{space 3}0.617{col 54}{space 4}-.0000685{col 67}{space 3} .0001155
+{txt}       /beta {c |}{col 14}{res}{space 2}  1.23682{col 26}{space 2} 1.293646{col 37}{space 1}    0.96{col 46}{space 3}0.339{col 54}{space 4}-1.299377{col 67}{space 3} 3.773017
+{txt}      /delta {c |}{col 14}{res}{space 2}  .754195{col 26}{space 2} .2401737{col 37}{space 1}    3.14{col 46}{space 3}0.002{col 54}{space 4} .2833337{col 67}{space 3} 1.225056
+{txt}      /alpha {c |}{col 14}{res}{space 2} .0036661{col 26}{space 2} .0108349{col 37}{space 1}    0.34{col 46}{space 3}0.735{col 54}{space 4}-.0175759{col 67}{space 3}  .024908
+{txt}          /a {c |}{col 14}{res}{space 2} .1426753{col 26}{space 2} .1401882{col 37}{space 1}    1.02{col 46}{space 3}0.309{col 54}{space 4}-.1321642{col 67}{space 3} .4175147
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+
+{com}. 
+. restore
+{txt}
+{com}. 
+. 
+. 
+. // Table 6:
+. // col 1 - power - s,k,gamma, prob weighting, theta=1
+. // col 2 - power - s,k,gamma, prob weighting, theta=0.88
+. // col 3 - power - s,k,gamma, prob weighting, theta estimated
+. // col 4 - expon - s,k,gamma, prob weighting, theta=1
+. // col 2 - expon - s,k,gamma, prob weighting, theta=0.88
+. // col 3 - expon - s,k,gamma, prob weighting, theta estimated
+. 
+. global specificationsT6 Curv_fix1 Curv_fix088 Curv_estim
+{txt}
+{com}. 
+. 
+. 
+. preserve
+{txt}
+{com}.         gen buttonpresses_nearest100 = round(buttonpresses, 100)
+{txt}
+{com}.         replace buttonpresses_nearest100 = 25 if buttonpresses_nearest100 == 0
+{txt}(44 real changes made)
+
+{com}.         label variable buttonpresses_nearest100 "Effort"
+{txt}
+{com}.         * Log of rounded button presses
+.         gen logbuttonpresses_nearest100 = ln(buttonpresses_nearest100)  
+{txt}
+{com}.         label variable logbuttonpresses_nearest100 "Log effort"
+{txt}
+{com}.         foreach model of global models {c -(}
+{txt}  2{com}.                 
+. * Cost function specifications
+.                         
+.                 if ("`model'" == "POWER") {c -(}
+{txt}  3{com}.                 local depvar logbuttonpresses_nearest100
+{txt}  4{com}.                 
+.                         global st_values `"k 1.66306e-10 gamma 19.8117987 s 7.74996"'
+{txt}  5{com}.                         local k_scaler = 1e+57
+{txt}  6{com}.                         local s_scaler = 1e+6
+{txt}  7{com}.                 {c )-}
+{txt}  8{com}.                 
+.                 if ("`model'" == "EXPON") {c -(}
+{txt}  9{com}.                 local depvar buttonpresses_nearest100
+{txt} 10{com}.                         global st_values `"k 1.69443 gamma 0.015645717 s 3.69198"'
+{txt} 11{com}.                         local k_scaler = 1e+16
+{txt} 12{com}.                         local s_scaler = 1e+6
+{txt} 13{com}.                 {c )-}
+{txt} 14{com}. 
+. eststo clear
+{txt} 15{com}. 
+.         foreach spec in $specificationsT6 {c -(}
+{txt} 16{com}.                 if "`spec'" == "Curv_fix088" {c -(} 
+{txt} 17{com}.                         local sample1 `""1.1", "1.2", "1.3""'
+{txt} 18{com}.                         local sample2 `""6.1", "6.2""'
+{txt} 19{com}.                         local sample Bench_Prob
+{txt} 20{com}.                         local alpha = 1
+{txt} 21{com}.                         local a = 1
+{txt} 22{com}.                         local beta = 1
+{txt} 23{com}.                         local delta = 1
+{txt} 24{com}.                         local p_weight = `"{c -(}p_weight{c )-}"' 
+{txt} 25{com}.                         local curv = 0.88
+{txt} 26{com}.                         local gift = 1
+{txt} 27{com}.                         local stval_spec `"p_weight 0.2"'
+{txt} 28{com}.                 {c )-}
+{txt} 29{com}.                 if "`spec'" == "Curv_fix1" {c -(} 
+{txt} 30{com}.                         local sample1 `""1.1", "1.2", "1.3""' 
+{txt} 31{com}.                         local sample2 `""6.1", "6.2""'
+{txt} 32{com}.                         local sample Bench_Prob
+{txt} 33{com}.                         local alpha = 1
+{txt} 34{com}.                         local a = 1
+{txt} 35{com}.                         local beta = 1
+{txt} 36{com}.                         local delta = 1
+{txt} 37{com}.                         local p_weight = `"{c -(}p_weight{c )-}"' 
+{txt} 38{com}.                         local curv = 1
+{txt} 39{com}.                         local gift = 1
+{txt} 40{com}.                         local stval_spec `"p_weight 0.2"'
+{txt} 41{com}.                 {c )-}
+{txt} 42{com}.                         if "`spec'" == "Curv_estim" {c -(} 
+{txt} 43{com}.                         local sample1 `""1.1", "1.2", "1.3""'
+{txt} 44{com}.                         local sample2 `""6.1", "6.2""'
+{txt} 45{com}.                         local sample Bench_Prob
+{txt} 46{com}.                         local alpha = 1
+{txt} 47{com}.                         local a = 1
+{txt} 48{com}.                         local beta = 1
+{txt} 49{com}.                         local delta = 1
+{txt} 50{com}.                         local p_weight = `"{c -(}p_weight{c )-}"'
+{txt} 51{com}.                         local curv `"{c -(}curv{c )-}"'
+{txt} 52{com}.                         local gift = 1
+{txt} 53{com}.                         local stval_spec `"p_weight 0.2 curv 0.5"'
+{txt} 54{com}.                 {c )-}       
+{txt} 55{com}. * Run model
+. ** Use nl default for standard errors (Gauss-Newton)
+. 
+. tempvar sample_dummy
+{txt} 56{com}. g `sample_dummy' = 1 if inlist(treatment, `sample1')
+{txt} 57{com}. replace `sample_dummy' = 1 if inlist(treatment, `sample2')
+{txt} 58{com}. 
+.                         nl (`depvar' = -1/{c -(}gamma{c )-} * ln({c -(}k{c )-}/`k_scaler') + 1/ {c -(}gamma{c )-}*ln({c -(}s{c )-}/`s_scaler'+`gift'*0.4*gift_dummy + `beta'^delay_dummy*`delta'^delay_wks*`p_weight'^weight_dummy*prob*payoff_per_100^`curv'+`alpha'*payoff_charity_per_100+`a'*0.01*dummy_charity)) ///
+>                         if `sample_dummy' == 1, initial($st_values `stval_spec') noc robust eps($precision)
+{txt} 59{com}. 
+.                         predict effort_hat
+{txt} 60{com}.                                                         
+.                         * Store results
+.                         capt eststo `spec'_`model'
+{txt} 61{com}.                         capt estadd local sam `"`sample'"': `spec'_`model'
+{txt} 62{com}.                         capt estadd local mod `model': `spec'_`model'
+{txt} 63{com}.                         capt estadd local spec `spec': `spec'_`model'
+{txt} 64{com}.                                 capt estadd scalar scaling_k = `k_scaler' : `spec'_`model'
+{txt} 65{com}.                                 capt estadd scalar scaling_s = `s_scaler' : `spec'_`model'
+{txt} 66{com}.                         local prediction = 1
+{txt} 67{com}.                         foreach treatment in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 68{com}.                                 sum effort_hat if treatment == "`treatment'", mean
+{txt} 69{com}.                                 capt estadd scalar pred_`prediction' = r(mean): `spec'_`model'
+{txt} 70{com}.                                 local ++prediction
+{txt} 71{com}.                         {c )-}
+{txt} 72{com}.                         drop effort_hat
+{txt} 73{com}.                         
+.         {c )-}
+{txt} 74{com}.         * Report results
+. 
+. // levelsof treatment, l(treatments)
+. local tablenote1
+{txt} 75{com}. local tablenote2
+{txt} 76{com}. foreach t in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 77{com}.         sum buttonpresses_`rounding' if treatment == "`t'", mean
+{txt} 78{com}.         local avg = int(`r(mean)')
+{txt} 79{com}.         local tablenote1 `"`tablenote1' ''`t''': `avg', "'
+{txt} 80{com}. {c )-}
+{txt} 81{com}. foreach t in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 82{com}.         sum logbuttonpresses_`rounding' if treatment == "`t'", mean
+{txt} 83{com}.         local avg = round(`r(mean)',0.001)
+{txt} 84{com}.         local tablenote2 `"`tablenote2' ''`t''': `avg', "'
+{txt} 85{com}. 
+. {c )-}
+{txt} 86{com}. 
+. capt esttab _all using "${c -(}main{c )-}/output/estimation_results_T6_`model'", nogaps replace ///
+> csv label b(a8) se(a8) r2(4) ar2(4) nostar ///
+> scalars("sam Sample" "mod Cost function" "spec Specification" "scaling_k Coef. k scaled up by" "scaling_s Coef. s scaled up by" "rss RSS" "rmse Root MSE" "msr Residual mean square" ///
+> "dev Residual deviance" "ic \# iterations" "pred_1 Predicted effort 1.1" /// 
+>  "pred_2 Predicted effort 1.2" "pred_3 Predicted effort 1.3" "pred_4 Predicted effort 1.4" "pred_5 Predicted effort 2" ///
+>  "pred_6 Predicted effort 3.1" "pred_7 Predicted effort 3.2" "pred_8 Predicted effort 4.1" ///
+>  "pred_9 Predicted effort 4.2" "pred_10 Predicted effort 6.1" "pred_11 Predicted effort 6.2") ///
+>  nonotes addnotes("Sample average effort: `tablenote1'" "Sample average log effort: `tablenote2'")
+{txt} 87{com}. 
+. eststo clear
+{txt} 88{com}. {c )-}
+{txt}(8197 missing values generated)
+(1123 real changes made)
+(obs = 2787)
+
+Iteration 0:  residual SS = {res} 964.0426
+{txt}Iteration 1:  residual SS = {res} 964.0152
+{txt}Iteration 2:  residual SS = {res} 963.9873
+{txt}Iteration 3:  residual SS = {res} 963.9589
+{txt}Iteration 4:  residual SS = {res} 963.9301
+{txt}Iteration 5:  residual SS = {res} 963.9009
+{txt}Iteration 6:  residual SS = {res} 963.8714
+{txt}Iteration 7:  residual SS = {res} 963.8415
+{txt}Iteration 8:  residual SS = {res} 963.8114
+{txt}Iteration 9:  residual SS = {res}  963.781
+{txt}Iteration 10:  residual SS = {res} 963.7504
+{txt}Iteration 11:  residual SS = {res} 963.7196
+{txt}Iteration 12:  residual SS = {res} 963.6887
+{txt}Iteration 13:  residual SS = {res} 963.6577
+{txt}Iteration 14:  residual SS = {res} 963.6266
+{txt}Iteration 15:  residual SS = {res} 963.5956
+{txt}Iteration 16:  residual SS = {res} 963.5645
+{txt}Iteration 17:  residual SS = {res} 963.5336
+{txt}Iteration 18:  residual SS = {res} 963.5027
+{txt}Iteration 19:  residual SS = {res} 963.4721
+{txt}Iteration 20:  residual SS = {res} 963.4416
+{txt}Iteration 21:  residual SS = {res} 963.4113
+{txt}Iteration 22:  residual SS = {res} 963.3814
+{txt}Iteration 23:  residual SS = {res} 963.3517
+{txt}Iteration 24:  residual SS = {res} 963.3508
+{txt}Iteration 25:  residual SS = {res} 963.3461
+{txt}Iteration 26:  residual SS = {res}  963.338
+{txt}Iteration 27:  residual SS = {res} 963.3271
+{txt}Iteration 28:  residual SS = {res} 963.3141
+{txt}Iteration 29:  residual SS = {res} 963.2994
+{txt}Iteration 30:  residual SS = {res} 963.2839
+{txt}Iteration 31:  residual SS = {res} 963.2679
+{txt}Iteration 32:  residual SS = {res}  963.252
+{txt}Iteration 33:  residual SS = {res} 963.2368
+{txt}Iteration 34:  residual SS = {res} 963.2227
+{txt}Iteration 35:  residual SS = {res} 963.2103
+{txt}Iteration 36:  residual SS = {res} 963.1998
+{txt}Iteration 37:  residual SS = {res} 963.1918
+{txt}Iteration 38:  residual SS = {res} 963.1866
+{txt}Iteration 39:  residual SS = {res} 963.1844
+{txt}Iteration 40:  residual SS = {res} 963.1734
+{txt}Iteration 41:  residual SS = {res} 963.1637
+{txt}Iteration 42:  residual SS = {res} 963.1553
+{txt}Iteration 43:  residual SS = {res} 963.1483
+{txt}Iteration 44:  residual SS = {res} 963.1426
+{txt}Iteration 45:  residual SS = {res} 963.1382
+{txt}Iteration 46:  residual SS = {res} 963.1352
+{txt}Iteration 47:  residual SS = {res} 963.1335
+{txt}Iteration 48:  residual SS = {res} 963.1332
+{txt}Iteration 49:  residual SS = {res} 963.1315
+{txt}Iteration 50:  residual SS = {res} 963.1301
+{txt}Iteration 51:  residual SS = {res} 963.1291
+{txt}Iteration 52:  residual SS = {res} 963.1285
+{txt}Iteration 53:  residual SS = {res} 963.1283
+{txt}Iteration 54:  residual SS = {res} 963.1279
+{txt}Iteration 55:  residual SS = {res} 963.1275
+{txt}Iteration 56:  residual SS = {res} 963.1272
+{txt}Iteration 57:  residual SS = {res} 963.1271
+{txt}Iteration 58:  residual SS = {res}  963.127
+{txt}Iteration 59:  residual SS = {res} 963.1269
+{txt}Iteration 60:  residual SS = {res} 963.1268
+{txt}Iteration 61:  residual SS = {res} 963.1268
+{txt}Iteration 62:  residual SS = {res} 963.1267
+{txt}Iteration 63:  residual SS = {res} 963.1267
+{txt}Iteration 64:  residual SS = {res} 963.1267
+{txt}Iteration 65:  residual SS = {res} 963.1267
+{txt}Iteration 66:  residual SS = {res} 963.1266
+{txt}Iteration 67:  residual SS = {res} 963.1266
+{txt}Iteration 68:  residual SS = {res} 963.1266
+{txt}Iteration 69:  residual SS = {res} 963.1266
+{txt}Iteration 70:  residual SS = {res} 963.1266
+{txt}Iteration 71:  residual SS = {res} 963.1266
+{txt}Iteration 72:  residual SS = {res} 963.1266
+{txt}Iteration 73:  residual SS = {res} 963.1266
+{txt}Iteration 74:  residual SS = {res} 963.1266
+{txt}Iteration 75:  residual SS = {res} 963.1266
+{txt}Iteration 76:  residual SS = {res} 963.1266
+{txt}Iteration 77:  residual SS = {res} 963.1266
+{txt}Iteration 78:  residual SS = {res} 963.1266
+{txt}Iteration 79:  residual SS = {res} 963.1266
+{txt}Iteration 80:  residual SS = {res} 963.1266
+{txt}Iteration 81:  residual SS = {res} 963.1266
+{txt}Iteration 82:  residual SS = {res} 963.1266
+{txt}Iteration 83:  residual SS = {res} 963.1266
+{txt}Iteration 84:  residual SS = {res} 963.1266
+{txt}Iteration 85:  residual SS = {res} 963.1266
+{txt}Iteration 86:  residual SS = {res} 963.1266
+{txt}Iteration 87:  residual SS = {res} 963.1266
+{txt}Iteration 88:  residual SS = {res} 963.1266
+{txt}Iteration 89:  residual SS = {res} 963.1266
+{txt}Iteration 90:  residual SS = {res} 963.1266
+{txt}Iteration 91:  residual SS = {res} 963.1266
+{txt}Iteration 92:  residual SS = {res} 963.1266
+{txt}Iteration 93:  residual SS = {res} 963.1266
+{txt}Iteration 94:  residual SS = {res} 963.1266
+{txt}Iteration 95:  residual SS = {res} 963.1266
+{txt}Iteration 96:  residual SS = {res} 963.1266
+{txt}Iteration 97:  residual SS = {res} 963.1266
+{txt}Iteration 98:  residual SS = {res} 963.1266
+{txt}Iteration 99:  residual SS = {res} 963.1266
+{txt}Iteration 100:  residual SS = {res} 963.1266
+{txt}Iteration 101:  residual SS = {res} 963.1266
+{txt}Iteration 102:  residual SS = {res} 963.1266
+{txt}Iteration 103:  residual SS = {res} 963.1266
+{txt}Iteration 104:  residual SS = {res} 963.1266
+{txt}Iteration 105:  residual SS = {res} 963.1266
+{txt}Iteration 106:  residual SS = {res} 963.1266
+{txt}Iteration 107:  residual SS = {res} 963.1266
+{txt}Iteration 108:  residual SS = {res} 963.1266
+{txt}Iteration 109:  residual SS = {res} 963.1266
+{txt}Iteration 110:  residual SS = {res} 963.1266
+{txt}Iteration 111:  residual SS = {res} 963.1266
+{txt}Iteration 112:  residual SS = {res} 963.1266
+{txt}Iteration 113:  residual SS = {res} 963.1266
+{txt}Iteration 114:  residual SS = {res} 963.1266
+{txt}Iteration 115:  residual SS = {res} 963.1266
+{txt}Iteration 116:  residual SS = {res} 963.1266
+{txt}Iteration 117:  residual SS = {res} 963.1266
+{txt}Iteration 118:  residual SS = {res} 963.1266
+{txt}Iteration 119:  residual SS = {res} 963.1266
+{txt}Iteration 120:  residual SS = {res} 963.1266
+{txt}Iteration 121:  residual SS = {res} 963.1266
+{txt}Iteration 122:  residual SS = {res} 963.1266
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     2787
+{txt}{col 54}R-squared     = {res}   0.9938
+{txt}{col 54}Adj R-squared = {res}   0.9938
+{txt}{col 54}Root MSE      = {res} .5881757
+{txt}{col 54}Res. dev.     = {res} 4947.875
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}logbutto~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} 20.59252{col 26}{space 2} 4.215243{col 37}{space 1}    4.89{col 46}{space 3}0.000{col 54}{space 4}  12.3272{col 67}{space 3} 28.85784
+{txt}          /k {c |}{col 14}{res}{space 2} 3.77e-13{col 26}{space 2} 1.45e-11{col 37}{space 1}    0.03{col 46}{space 3}0.979{col 54}{space 4}-2.80e-11{col 67}{space 3} 2.87e-11
+{txt}          /s {c |}{col 14}{res}{space 2} 2.657917{col 26}{space 2} 5.453028{col 37}{space 1}    0.49{col 46}{space 3}0.626{col 54}{space 4}-8.034469{col 67}{space 3}  13.3503
+{txt}   /p_weight {c |}{col 14}{res}{space 2} .1945073{col 26}{space 2} .1477303{col 37}{space 1}    1.32{col 46}{space 3}0.188{col 54}{space 4}-.0951647{col 67}{space 3} .4841794
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(8197 missing values generated)
+(1123 real changes made)
+(obs = 2787)
+
+Iteration 0:  residual SS = {res} 965.6389
+{txt}Iteration 1:  residual SS = {res}  965.637
+{txt}Iteration 2:  residual SS = {res} 965.6231
+{txt}Iteration 3:  residual SS = {res} 965.5979
+{txt}Iteration 4:  residual SS = {res} 965.5622
+{txt}Iteration 5:  residual SS = {res} 965.5168
+{txt}Iteration 6:  residual SS = {res} 965.4626
+{txt}Iteration 7:  residual SS = {res} 965.4004
+{txt}Iteration 8:  residual SS = {res}  965.331
+{txt}Iteration 9:  residual SS = {res} 965.2554
+{txt}Iteration 10:  residual SS = {res} 965.1743
+{txt}Iteration 11:  residual SS = {res} 965.0885
+{txt}Iteration 12:  residual SS = {res} 964.9988
+{txt}Iteration 13:  residual SS = {res} 964.9058
+{txt}Iteration 14:  residual SS = {res} 964.8101
+{txt}Iteration 15:  residual SS = {res} 964.7973
+{txt}Iteration 16:  residual SS = {res}  964.747
+{txt}Iteration 17:  residual SS = {res} 964.6652
+{txt}Iteration 18:  residual SS = {res}  964.558
+{txt}Iteration 19:  residual SS = {res} 964.4308
+{txt}Iteration 20:  residual SS = {res} 964.2889
+{txt}Iteration 21:  residual SS = {res} 964.1369
+{txt}Iteration 22:  residual SS = {res} 964.0892
+{txt}Iteration 23:  residual SS = {res} 963.9395
+{txt}Iteration 24:  residual SS = {res} 963.7249
+{txt}Iteration 25:  residual SS = {res} 963.6643
+{txt}Iteration 26:  residual SS = {res} 963.2996
+{txt}Iteration 27:  residual SS = {res} 962.9463
+{txt}Iteration 28:  residual SS = {res} 962.0833
+{txt}Iteration 29:  residual SS = {res} 961.4822
+{txt}Iteration 30:  residual SS = {res} 961.4739
+{txt}Iteration 31:  residual SS = {res} 961.4739
+{txt}Iteration 32:  residual SS = {res} 961.4739
+{txt}Iteration 33:  residual SS = {res} 961.4739
+{txt}Iteration 34:  residual SS = {res} 961.4739
+{txt}Iteration 35:  residual SS = {res} 961.4739
+{txt}Iteration 36:  residual SS = {res} 961.4739
+{txt}Iteration 37:  residual SS = {res} 961.4739
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     2787
+{txt}{col 54}R-squared     = {res}   0.9938
+{txt}{col 54}Adj R-squared = {res}   0.9938
+{txt}{col 54}Root MSE      = {res} .5877764
+{txt}{col 54}Res. dev.     = {res} 4943.088
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}logbutto~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} 18.87095{col 26}{space 2}  3.92461{col 37}{space 1}    4.81{col 46}{space 3}0.000{col 54}{space 4} 11.17551{col 67}{space 3} 26.56639
+{txt}          /k {c |}{col 14}{res}{space 2} 3.92e-07{col 26}{space 2} .0000116{col 37}{space 1}    0.03{col 46}{space 3}0.973{col 54}{space 4}-.0000224{col 67}{space 3} .0000232
+{txt}          /s {c |}{col 14}{res}{space 2} 6.217825{col 26}{space 2} 12.24063{col 37}{space 1}    0.51{col 46}{space 3}0.612{col 54}{space 4} -17.7838{col 67}{space 3} 30.21945
+{txt}   /p_weight {c |}{col 14}{res}{space 2} .3771441{col 26}{space 2} .2624964{col 37}{space 1}    1.44{col 46}{space 3}0.151{col 54}{space 4}-.1375632{col 67}{space 3} .8918514
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(8197 missing values generated)
+(1123 real changes made)
+(obs = 2787)
+
+Iteration 0:  residual SS = {res}  964.867
+{txt}Iteration 1:  residual SS = {res} 961.7083
+{txt}Iteration 2:  residual SS = {res}  961.475
+{txt}Iteration 3:  residual SS = {res} 961.4731
+{txt}Iteration 4:  residual SS = {res} 961.4731
+{txt}Iteration 5:  residual SS = {res} 961.4731
+{txt}Iteration 6:  residual SS = {res} 961.4731
+{txt}Iteration 7:  residual SS = {res} 961.4731
+{txt}Iteration 8:  residual SS = {res} 961.4731
+{txt}Iteration 9:  residual SS = {res} 961.4731
+{txt}Iteration 10:  residual SS = {res} 961.4731
+{txt}Iteration 11:  residual SS = {res} 961.4731
+{txt}Iteration 12:  residual SS = {res} 961.4731
+{txt}Iteration 13:  residual SS = {res} 961.4731
+{txt}Iteration 14:  residual SS = {res} 961.4731
+{txt}Iteration 15:  residual SS = {res} 961.4731
+{txt}Iteration 16:  residual SS = {res} 961.4731
+{txt}Iteration 17:  residual SS = {res} 961.4731
+{txt}Iteration 18:  residual SS = {res} 961.4731
+{txt}Iteration 19:  residual SS = {res} 961.4731
+{txt}Iteration 20:  residual SS = {res} 961.4731
+{txt}Iteration 21:  residual SS = {res} 961.4731
+{txt}Iteration 22:  residual SS = {res} 961.4731
+{txt}Iteration 23:  residual SS = {res} 961.4731
+{txt}Iteration 24:  residual SS = {res} 961.4731
+{txt}Iteration 25:  residual SS = {res} 961.4731
+{txt}Iteration 26:  residual SS = {res} 961.4731
+{txt}Iteration 27:  residual SS = {res} 961.4731
+{txt}Iteration 28:  residual SS = {res} 961.4731
+{txt}Iteration 29:  residual SS = {res} 961.4731
+{txt}Iteration 30:  residual SS = {res} 961.4731
+{txt}Iteration 31:  residual SS = {res} 961.4731
+{txt}Iteration 32:  residual SS = {res} 961.4731
+{txt}Iteration 33:  residual SS = {res} 961.4731
+{txt}Iteration 34:  residual SS = {res} 961.4731
+{txt}Iteration 35:  residual SS = {res} 961.4731
+{txt}Iteration 36:  residual SS = {res} 961.4731
+{txt}Iteration 37:  residual SS = {res} 961.4731
+{txt}Iteration 38:  residual SS = {res} 961.4731
+{txt}Iteration 39:  residual SS = {res} 961.4731
+{txt}Iteration 40:  residual SS = {res} 961.4731
+{txt}Iteration 41:  residual SS = {res} 961.4731
+{txt}Iteration 42:  residual SS = {res} 961.4731
+{txt}Iteration 43:  residual SS = {res} 961.4731
+{txt}Iteration 44:  residual SS = {res} 961.4731
+{txt}Iteration 45:  residual SS = {res} 961.4731
+{txt}Iteration 46:  residual SS = {res} 961.4731
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     2787
+{txt}{col 54}R-squared     = {res}   0.9938
+{txt}{col 54}Adj R-squared = {res}   0.9938
+{txt}{col 54}Root MSE      = {res} .5877761
+{txt}{col 54}Res. dev.     = {res} 4943.086
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}logbutto~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} 19.63833{col 26}{space 2}  14.1894{col 37}{space 1}    1.38{col 46}{space 3}0.166{col 54}{space 4}-8.184489{col 67}{space 3} 47.46115
+{txt}          /k {c |}{col 14}{res}{space 2} 1.02e-09{col 26}{space 2} 1.12e-07{col 37}{space 1}    0.01{col 46}{space 3}0.993{col 54}{space 4}-2.18e-07{col 67}{space 3} 2.20e-07
+{txt}          /s {c |}{col 14}{res}{space 2} 3.748701{col 26}{space 2} 34.60788{col 37}{space 1}    0.11{col 46}{space 3}0.914{col 54}{space 4}-64.11102{col 67}{space 3} 71.60842
+{txt}   /p_weight {c |}{col 14}{res}{space 2}  .295194{col 26}{space 2} 1.310645{col 37}{space 1}    0.23{col 46}{space 3}0.822{col 54}{space 4} -2.27474{col 67}{space 3} 2.865128
+{txt}       /curv {c |}{col 14}{res}{space 2} .9235292{col 26}{space 2} .7914347{col 37}{space 1}    1.17{col 46}{space 3}0.243{col 54}{space 4}-.6283292{col 67}{space 3} 2.475388
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(8197 missing values generated)
+(1123 real changes made)
+(obs = 2787)
+
+Iteration 0:  residual SS = {res} 1.16e+09
+{txt}Iteration 1:  residual SS = {res} 1.16e+09
+{txt}Iteration 2:  residual SS = {res} 1.16e+09
+{txt}Iteration 3:  residual SS = {res} 1.16e+09
+{txt}Iteration 4:  residual SS = {res} 1.16e+09
+{txt}Iteration 5:  residual SS = {res} 1.16e+09
+{txt}Iteration 6:  residual SS = {res} 1.16e+09
+{txt}Iteration 7:  residual SS = {res} 1.16e+09
+{txt}Iteration 8:  residual SS = {res} 1.16e+09
+{txt}Iteration 9:  residual SS = {res} 1.16e+09
+{txt}Iteration 10:  residual SS = {res} 1.16e+09
+{txt}Iteration 11:  residual SS = {res} 1.16e+09
+{txt}Iteration 12:  residual SS = {res} 1.16e+09
+{txt}Iteration 13:  residual SS = {res} 1.16e+09
+{txt}Iteration 14:  residual SS = {res} 1.16e+09
+{txt}Iteration 15:  residual SS = {res} 1.16e+09
+{txt}Iteration 16:  residual SS = {res} 1.16e+09
+{txt}Iteration 17:  residual SS = {res} 1.16e+09
+{txt}Iteration 18:  residual SS = {res} 1.16e+09
+{txt}Iteration 19:  residual SS = {res} 1.16e+09
+{txt}Iteration 20:  residual SS = {res} 1.16e+09
+{txt}Iteration 21:  residual SS = {res} 1.16e+09
+{txt}Iteration 22:  residual SS = {res} 1.16e+09
+{txt}Iteration 23:  residual SS = {res} 1.16e+09
+{txt}Iteration 24:  residual SS = {res} 1.16e+09
+{txt}Iteration 25:  residual SS = {res} 1.16e+09
+{txt}Iteration 26:  residual SS = {res} 1.16e+09
+{txt}Iteration 27:  residual SS = {res} 1.16e+09
+{txt}Iteration 28:  residual SS = {res} 1.16e+09
+{txt}Iteration 29:  residual SS = {res} 1.16e+09
+{txt}Iteration 30:  residual SS = {res} 1.16e+09
+{txt}Iteration 31:  residual SS = {res} 1.16e+09
+{txt}Iteration 32:  residual SS = {res} 1.16e+09
+{txt}Iteration 33:  residual SS = {res} 1.16e+09
+{txt}Iteration 34:  residual SS = {res} 1.16e+09
+{txt}Iteration 35:  residual SS = {res} 1.16e+09
+{txt}Iteration 36:  residual SS = {res} 1.16e+09
+{txt}Iteration 37:  residual SS = {res} 1.16e+09
+{txt}Iteration 38:  residual SS = {res} 1.16e+09
+{txt}Iteration 39:  residual SS = {res} 1.16e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     2787
+{txt}{col 54}R-squared     = {res}   0.9001
+{txt}{col 54}Adj R-squared = {res}   0.9000
+{txt}{col 54}Root MSE      = {res} 644.8804
+{txt}{col 54}Res. dev.     = {res} 43963.73
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} .0133624{col 26}{space 2} .0023824{col 37}{space 1}    5.61{col 46}{space 3}0.000{col 54}{space 4}  .008691{col 67}{space 3} .0180337
+{txt}          /k {c |}{col 14}{res}{space 2} 242.2539{col 26}{space 2} 1193.074{col 37}{space 1}    0.20{col 46}{space 3}0.839{col 54}{space 4}-2097.146{col 67}{space 3} 2581.653
+{txt}          /s {c |}{col 14}{res}{space 2}  16.4492{col 26}{space 2} 22.63237{col 37}{space 1}    0.73{col 46}{space 3}0.467{col 54}{space 4}-27.92873{col 67}{space 3} 60.82714
+{txt}   /p_weight {c |}{col 14}{res}{space 2} .2389731{col 26}{space 2} .1405569{col 37}{space 1}    1.70{col 46}{space 3}0.089{col 54}{space 4}-.0366331{col 67}{space 3} .5145794
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(8197 missing values generated)
+(1123 real changes made)
+(obs = 2787)
+
+Iteration 0:  residual SS = {res} 1.16e+09
+{txt}Iteration 1:  residual SS = {res} 1.16e+09
+{txt}Iteration 2:  residual SS = {res} 1.16e+09
+{txt}Iteration 3:  residual SS = {res} 1.16e+09
+{txt}Iteration 4:  residual SS = {res} 1.16e+09
+{txt}Iteration 5:  residual SS = {res} 1.16e+09
+{txt}Iteration 6:  residual SS = {res} 1.16e+09
+{txt}Iteration 7:  residual SS = {res} 1.16e+09
+{txt}Iteration 8:  residual SS = {res} 1.16e+09
+{txt}Iteration 9:  residual SS = {res} 1.16e+09
+{txt}Iteration 10:  residual SS = {res} 1.16e+09
+{txt}Iteration 11:  residual SS = {res} 1.16e+09
+{txt}Iteration 12:  residual SS = {res} 1.16e+09
+{txt}Iteration 13:  residual SS = {res} 1.16e+09
+{txt}Iteration 14:  residual SS = {res} 1.16e+09
+{txt}Iteration 15:  residual SS = {res} 1.16e+09
+{txt}Iteration 16:  residual SS = {res} 1.16e+09
+{txt}Iteration 17:  residual SS = {res} 1.16e+09
+{txt}Iteration 18:  residual SS = {res} 1.16e+09
+{txt}Iteration 19:  residual SS = {res} 1.16e+09
+{txt}Iteration 20:  residual SS = {res} 1.16e+09
+{txt}Iteration 21:  residual SS = {res} 1.16e+09
+{txt}Iteration 22:  residual SS = {res} 1.16e+09
+{txt}Iteration 23:  residual SS = {res} 1.16e+09
+{txt}Iteration 24:  residual SS = {res} 1.16e+09
+{txt}Iteration 25:  residual SS = {res} 1.16e+09
+{txt}Iteration 26:  residual SS = {res} 1.16e+09
+{txt}Iteration 27:  residual SS = {res} 1.16e+09
+{txt}Iteration 28:  residual SS = {res} 1.16e+09
+{txt}Iteration 29:  residual SS = {res} 1.16e+09
+{txt}Iteration 30:  residual SS = {res} 1.16e+09
+{txt}Iteration 31:  residual SS = {res} 1.16e+09
+{txt}Iteration 32:  residual SS = {res} 1.16e+09
+{txt}Iteration 33:  residual SS = {res} 1.16e+09
+{txt}Iteration 34:  residual SS = {res} 1.16e+09
+{txt}Iteration 35:  residual SS = {res} 1.16e+09
+{txt}Iteration 36:  residual SS = {res} 1.16e+09
+{txt}Iteration 37:  residual SS = {res} 1.16e+09
+{txt}Iteration 38:  residual SS = {res} 1.16e+09
+{txt}Iteration 39:  residual SS = {res} 1.16e+09
+{txt}Iteration 40:  residual SS = {res} 1.16e+09
+{txt}Iteration 41:  residual SS = {res} 1.16e+09
+{txt}Iteration 42:  residual SS = {res} 1.16e+09
+{txt}Iteration 43:  residual SS = {res} 1.16e+09
+{txt}Iteration 44:  residual SS = {res} 1.16e+09
+{txt}Iteration 45:  residual SS = {res} 1.16e+09
+{txt}Iteration 46:  residual SS = {res} 1.16e+09
+{txt}Iteration 47:  residual SS = {res} 1.16e+09
+{txt}Iteration 48:  residual SS = {res} 1.16e+09
+{txt}Iteration 49:  residual SS = {res} 1.16e+09
+{txt}Iteration 50:  residual SS = {res} 1.16e+09
+{txt}Iteration 51:  residual SS = {res} 1.16e+09
+{txt}Iteration 52:  residual SS = {res} 1.16e+09
+{txt}Iteration 53:  residual SS = {res} 1.16e+09
+{txt}Iteration 54:  residual SS = {res} 1.16e+09
+{txt}Iteration 55:  residual SS = {res} 1.16e+09
+{txt}Iteration 56:  residual SS = {res} 1.16e+09
+{txt}Iteration 57:  residual SS = {res} 1.16e+09
+{txt}Iteration 58:  residual SS = {res} 1.16e+09
+{txt}Iteration 59:  residual SS = {res} 1.16e+09
+{txt}Iteration 60:  residual SS = {res} 1.16e+09
+{txt}Iteration 61:  residual SS = {res} 1.16e+09
+{txt}Iteration 62:  residual SS = {res} 1.16e+09
+{txt}Iteration 63:  residual SS = {res} 1.16e+09
+{txt}Iteration 64:  residual SS = {res} 1.16e+09
+{txt}Iteration 65:  residual SS = {res} 1.16e+09
+{txt}Iteration 66:  residual SS = {res} 1.16e+09
+{txt}Iteration 67:  residual SS = {res} 1.16e+09
+{txt}Iteration 68:  residual SS = {res} 1.16e+09
+{txt}Iteration 69:  residual SS = {res} 1.16e+09
+{txt}Iteration 70:  residual SS = {res} 1.16e+09
+{txt}Iteration 71:  residual SS = {res} 1.16e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     2787
+{txt}{col 54}R-squared     = {res}   0.9001
+{txt}{col 54}Adj R-squared = {res}   0.9000
+{txt}{col 54}Root MSE      = {res} 644.8302
+{txt}{col 54}Res. dev.     = {res} 43963.29
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} .0119059{col 26}{space 2}  .002111{col 37}{space 1}    5.64{col 46}{space 3}0.000{col 54}{space 4} .0077667{col 67}{space 3} .0160451
+{txt}          /k {c |}{col 14}{res}{space 2} 7501.064{col 26}{space 2}  32741.5{col 37}{space 1}    0.23{col 46}{space 3}0.819{col 54}{space 4}-56699.01{col 67}{space 3} 71701.14
+{txt}          /s {c |}{col 14}{res}{space 2} 55.50415{col 26}{space 2} 67.80338{col 37}{space 1}    0.82{col 46}{space 3}0.413{col 54}{space 4}-77.44586{col 67}{space 3} 188.4542
+{txt}   /p_weight {c |}{col 14}{res}{space 2} .4659993{col 26}{space 2} .2432252{col 37}{space 1}    1.92{col 46}{space 3}0.055{col 54}{space 4}-.0109208{col 67}{space 3} .9429194
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(8197 missing values generated)
+(1123 real changes made)
+(obs = 2787)
+
+Iteration 0:  residual SS = {res} 1.19e+09
+{txt}Iteration 1:  residual SS = {res} 1.19e+09
+{txt}Iteration 2:  residual SS = {res} 1.19e+09
+{txt}Iteration 3:  residual SS = {res} 1.19e+09
+{txt}Iteration 4:  residual SS = {res} 1.19e+09
+{txt}Iteration 5:  residual SS = {res} 1.19e+09
+{txt}Iteration 6:  residual SS = {res} 1.19e+09
+{txt}Iteration 7:  residual SS = {res} 1.19e+09
+{txt}Iteration 8:  residual SS = {res} 1.19e+09
+{txt}Iteration 9:  residual SS = {res} 1.19e+09
+{txt}Iteration 10:  residual SS = {res} 1.19e+09
+{txt}Iteration 11:  residual SS = {res} 1.19e+09
+{txt}Iteration 12:  residual SS = {res} 1.19e+09
+{txt}Iteration 13:  residual SS = {res} 1.19e+09
+{txt}Iteration 14:  residual SS = {res} 1.19e+09
+{txt}Iteration 15:  residual SS = {res} 1.19e+09
+{txt}Iteration 16:  residual SS = {res} 1.19e+09
+{txt}Iteration 17:  residual SS = {res} 1.19e+09
+{txt}Iteration 18:  residual SS = {res} 1.19e+09
+{txt}Iteration 19:  residual SS = {res} 1.19e+09
+{txt}Iteration 20:  residual SS = {res} 1.19e+09
+{txt}Iteration 21:  residual SS = {res} 1.19e+09
+{txt}Iteration 22:  residual SS = {res} 1.19e+09
+{txt}Iteration 23:  residual SS = {res} 1.19e+09
+{txt}Iteration 24:  residual SS = {res} 1.19e+09
+{txt}Iteration 25:  residual SS = {res} 1.19e+09
+{txt}Iteration 26:  residual SS = {res} 1.19e+09
+{txt}Iteration 27:  residual SS = {res} 1.19e+09
+{txt}Iteration 28:  residual SS = {res} 1.19e+09
+{txt}Iteration 29:  residual SS = {res} 1.19e+09
+{txt}Iteration 30:  residual SS = {res} 1.19e+09
+{txt}Iteration 31:  residual SS = {res} 1.19e+09
+{txt}Iteration 32:  residual SS = {res} 1.19e+09
+{txt}Iteration 33:  residual SS = {res} 1.19e+09
+{txt}Iteration 34:  residual SS = {res} 1.19e+09
+{txt}Iteration 35:  residual SS = {res} 1.19e+09
+{txt}Iteration 36:  residual SS = {res} 1.19e+09
+{txt}Iteration 37:  residual SS = {res} 1.19e+09
+{txt}Iteration 38:  residual SS = {res} 1.19e+09
+{txt}Iteration 39:  residual SS = {res} 1.19e+09
+{txt}Iteration 40:  residual SS = {res} 1.19e+09
+{txt}Iteration 41:  residual SS = {res} 1.19e+09
+{txt}Iteration 42:  residual SS = {res} 1.19e+09
+{txt}Iteration 43:  residual SS = {res} 1.19e+09
+{txt}Iteration 44:  residual SS = {res} 1.19e+09
+{txt}Iteration 45:  residual SS = {res} 1.19e+09
+{txt}Iteration 46:  residual SS = {res} 1.19e+09
+{txt}Iteration 47:  residual SS = {res} 1.19e+09
+{txt}Iteration 48:  residual SS = {res} 1.19e+09
+{txt}Iteration 49:  residual SS = {res} 1.19e+09
+{txt}Iteration 50:  residual SS = {res} 1.19e+09
+{txt}Iteration 51:  residual SS = {res} 1.19e+09
+{txt}Iteration 52:  residual SS = {res} 1.19e+09
+{txt}Iteration 53:  residual SS = {res} 1.19e+09
+{txt}Iteration 54:  residual SS = {res} 1.19e+09
+{txt}Iteration 55:  residual SS = {res} 1.19e+09
+{txt}Iteration 56:  residual SS = {res} 1.19e+09
+{txt}Iteration 57:  residual SS = {res} 1.19e+09
+{txt}Iteration 58:  residual SS = {res} 1.19e+09
+{txt}Iteration 59:  residual SS = {res} 1.19e+09
+{txt}Iteration 60:  residual SS = {res} 1.19e+09
+{txt}Iteration 61:  residual SS = {res} 1.19e+09
+{txt}Iteration 62:  residual SS = {res} 1.19e+09
+{txt}Iteration 63:  residual SS = {res} 1.19e+09
+{txt}Iteration 64:  residual SS = {res} 1.19e+09
+{txt}Iteration 65:  residual SS = {res} 1.19e+09
+{txt}Iteration 66:  residual SS = {res} 1.19e+09
+{txt}Iteration 67:  residual SS = {res} 1.19e+09
+{txt}Iteration 68:  residual SS = {res} 1.19e+09
+{txt}Iteration 69:  residual SS = {res} 1.19e+09
+{txt}Iteration 70:  residual SS = {res} 1.19e+09
+{txt}Iteration 71:  residual SS = {res} 1.19e+09
+{txt}Iteration 72:  residual SS = {res} 1.19e+09
+{txt}Iteration 73:  residual SS = {res} 1.19e+09
+{txt}Iteration 74:  residual SS = {res} 1.19e+09
+{txt}Iteration 75:  residual SS = {res} 1.19e+09
+{txt}Iteration 76:  residual SS = {res} 1.19e+09
+{txt}Iteration 77:  residual SS = {res} 1.19e+09
+{txt}Iteration 78:  residual SS = {res} 1.19e+09
+{txt}Iteration 79:  residual SS = {res} 1.19e+09
+{txt}Iteration 80:  residual SS = {res} 1.19e+09
+{txt}Iteration 81:  residual SS = {res} 1.19e+09
+{txt}Iteration 82:  residual SS = {res} 1.19e+09
+{txt}Iteration 83:  residual SS = {res} 1.18e+09
+{txt}Iteration 84:  residual SS = {res} 1.18e+09
+{txt}Iteration 85:  residual SS = {res} 1.18e+09
+{txt}Iteration 86:  residual SS = {res} 1.18e+09
+{txt}Iteration 87:  residual SS = {res} 1.18e+09
+{txt}Iteration 88:  residual SS = {res} 1.18e+09
+{txt}Iteration 89:  residual SS = {res} 1.18e+09
+{txt}Iteration 90:  residual SS = {res} 1.18e+09
+{txt}Iteration 91:  residual SS = {res} 1.18e+09
+{txt}Iteration 92:  residual SS = {res} 1.18e+09
+{txt}Iteration 93:  residual SS = {res} 1.18e+09
+{txt}Iteration 94:  residual SS = {res} 1.18e+09
+{txt}Iteration 95:  residual SS = {res} 1.18e+09
+{txt}Iteration 96:  residual SS = {res} 1.18e+09
+{txt}Iteration 97:  residual SS = {res} 1.18e+09
+{txt}Iteration 98:  residual SS = {res} 1.18e+09
+{txt}Iteration 99:  residual SS = {res} 1.18e+09
+{txt}Iteration 100:  residual SS = {res} 1.18e+09
+{txt}Iteration 101:  residual SS = {res} 1.18e+09
+{txt}Iteration 102:  residual SS = {res} 1.18e+09
+{txt}Iteration 103:  residual SS = {res} 1.18e+09
+{txt}Iteration 104:  residual SS = {res} 1.18e+09
+{txt}Iteration 105:  residual SS = {res} 1.18e+09
+{txt}Iteration 106:  residual SS = {res} 1.18e+09
+{txt}Iteration 107:  residual SS = {res} 1.18e+09
+{txt}Iteration 108:  residual SS = {res} 1.18e+09
+{txt}Iteration 109:  residual SS = {res} 1.18e+09
+{txt}Iteration 110:  residual SS = {res} 1.18e+09
+{txt}Iteration 111:  residual SS = {res} 1.18e+09
+{txt}Iteration 112:  residual SS = {res} 1.18e+09
+{txt}Iteration 113:  residual SS = {res} 1.18e+09
+{txt}Iteration 114:  residual SS = {res} 1.18e+09
+{txt}Iteration 115:  residual SS = {res} 1.18e+09
+{txt}Iteration 116:  residual SS = {res} 1.18e+09
+{txt}Iteration 117:  residual SS = {res} 1.18e+09
+{txt}Iteration 118:  residual SS = {res} 1.18e+09
+{txt}Iteration 119:  residual SS = {res} 1.18e+09
+{txt}Iteration 120:  residual SS = {res} 1.18e+09
+{txt}Iteration 121:  residual SS = {res} 1.18e+09
+{txt}Iteration 122:  residual SS = {res} 1.18e+09
+{txt}Iteration 123:  residual SS = {res} 1.18e+09
+{txt}Iteration 124:  residual SS = {res} 1.18e+09
+{txt}Iteration 125:  residual SS = {res} 1.18e+09
+{txt}Iteration 126:  residual SS = {res} 1.18e+09
+{txt}Iteration 127:  residual SS = {res} 1.18e+09
+{txt}Iteration 128:  residual SS = {res} 1.18e+09
+{txt}Iteration 129:  residual SS = {res} 1.18e+09
+{txt}Iteration 130:  residual SS = {res} 1.18e+09
+{txt}Iteration 131:  residual SS = {res} 1.18e+09
+{txt}Iteration 132:  residual SS = {res} 1.18e+09
+{txt}Iteration 133:  residual SS = {res} 1.18e+09
+{txt}Iteration 134:  residual SS = {res} 1.18e+09
+{txt}Iteration 135:  residual SS = {res} 1.18e+09
+{txt}Iteration 136:  residual SS = {res} 1.18e+09
+{txt}Iteration 137:  residual SS = {res} 1.18e+09
+{txt}Iteration 138:  residual SS = {res} 1.18e+09
+{txt}Iteration 139:  residual SS = {res} 1.18e+09
+{txt}Iteration 140:  residual SS = {res} 1.18e+09
+{txt}Iteration 141:  residual SS = {res} 1.18e+09
+{txt}Iteration 142:  residual SS = {res} 1.17e+09
+{txt}Iteration 143:  residual SS = {res} 1.17e+09
+{txt}Iteration 144:  residual SS = {res} 1.17e+09
+{txt}Iteration 145:  residual SS = {res} 1.17e+09
+{txt}Iteration 146:  residual SS = {res} 1.17e+09
+{txt}Iteration 147:  residual SS = {res} 1.17e+09
+{txt}Iteration 148:  residual SS = {res} 1.17e+09
+{txt}Iteration 149:  residual SS = {res} 1.17e+09
+{txt}Iteration 150:  residual SS = {res} 1.17e+09
+{txt}Iteration 151:  residual SS = {res} 1.16e+09
+{txt}Iteration 152:  residual SS = {res} 1.16e+09
+{txt}Iteration 153:  residual SS = {res} 1.16e+09
+{txt}Iteration 154:  residual SS = {res} 1.16e+09
+{txt}Iteration 155:  residual SS = {res} 1.16e+09
+{txt}Iteration 156:  residual SS = {res} 1.16e+09
+{txt}Iteration 157:  residual SS = {res} 1.16e+09
+{txt}Iteration 158:  residual SS = {res} 1.16e+09
+{txt}Iteration 159:  residual SS = {res} 1.16e+09
+{txt}Iteration 160:  residual SS = {res} 1.16e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     2787
+{txt}{col 54}R-squared     = {res}   0.9002
+{txt}{col 54}Adj R-squared = {res}   0.9000
+{txt}{col 54}Root MSE      = {res} 644.8034
+{txt}{col 54}Res. dev.     = {res} 43962.06
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2}  .007201{col 26}{space 2} .0027412{col 37}{space 1}    2.63{col 46}{space 3}0.009{col 54}{space 4}  .001826{col 67}{space 3} .0125759
+{txt}          /k {c |}{col 14}{res}{space 2} 5.46e+08{col 26}{space 2} 3.50e+09{col 37}{space 1}    0.16{col 46}{space 3}0.876{col 54}{space 4}-6.32e+09{col 67}{space 3} 7.42e+09
+{txt}          /s {c |}{col 14}{res}{space 2} 3139.689{col 26}{space 2} 7158.196{col 37}{space 1}    0.44{col 46}{space 3}0.661{col 54}{space 4}-10896.22{col 67}{space 3}  17175.6
+{txt}   /p_weight {c |}{col 14}{res}{space 2} 4.296061{col 26}{space 2} 5.248623{col 37}{space 1}    0.82{col 46}{space 3}0.413{col 54}{space 4}-5.995529{col 67}{space 3} 14.58765
+{txt}       /curv {c |}{col 14}{res}{space 2} .4679424{col 26}{space 2} .2304028{col 37}{space 1}    2.03{col 46}{space 3}0.042{col 54}{space 4} .0161647{col 67}{space 3} .9197201
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+
+{com}. 
+. restore
+{txt}
+{com}. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. 
+. // Appendix Table 4:
+. // col 1 - expon - s,k, gamma = 0.01
+. // col 2 - expon - s,k, gamma = 0.02
+. // col 3 - expon - s,k,gamma, theta = 0.88
+. // col 4 - expon - s,k,gamma, continuous points (no rounding)
+. local m=1
+{txt}
+{com}. global models POWER
+{txt}
+{com}. 
+. global specificationsAT4 All_g01 All_g02 All_fix088 All_noround
+{txt}
+{com}. local Bench_Social_Time_Gift `""1.1", "1.2", "1.3", "3.1", "3.2", "4.1", "4.2", "10""'
+{txt}
+{com}. local Bench `""1.1", "1.2", "1.3""'
+{txt}
+{com}. 
+. eststo clear
+{txt}
+{com}. 
+. 
+. * Round to nearest 100
+.                 gen buttonpresses_nearest100 = round(buttonpresses, 100)
+{txt}
+{com}.                 replace buttonpresses_nearest100 = 25 if buttonpresses_nearest100 == 0
+{txt}(44 real changes made)
+
+{com}.                 label variable buttonpresses_nearest100 "Effort"
+{txt}
+{com}. 
+.                 gen buttonpresses_no_rounding = buttonpresses
+{txt}
+{com}.                 replace buttonpresses_no_rounding = 1 if buttonpresses_no_rounding == 0
+{txt}(0 real changes made)
+
+{com}.                 label variable buttonpresses_no_rounding "Effort"
+{txt}
+{com}. 
+.         local k_scaler = 1e+16
+{txt}
+{com}.         local s_scaler = 1e+6
+{txt}
+{com}.         local sample Bench_Social_Time_Gift
+{txt}
+{com}.         
+.         foreach spec in $specificationsAT4 {c -(}
+{txt}  2{com}.                 if "`spec'" == "All_g01" {c -(} 
+{txt}  3{com}.                         global st_values `"k 1.69443 s 3.69198"'
+{txt}  4{com}.                         local gamma = 0.01
+{txt}  5{com}.                         local alpha = `"{c -(}alpha{c )-}"'
+{txt}  6{com}.                         local a = `"{c -(}a{c )-}"'
+{txt}  7{com}.                         local beta = `"{c -(}beta{c )-}"'
+{txt}  8{com}.                         local delta = `"{c -(}delta{c )-}"'
+{txt}  9{com}.                         local p_weight = 1
+{txt} 10{com}.                         local curv = 1
+{txt} 11{com}.                         local gift `"{c -(}gift{c )-}"'
+{txt} 12{com}.                         local stval_spec `"alpha 0.003 a 0.13 beta 1.16 delta 0.75 gift 5e-6"'
+{txt} 13{com}.                         local rou = 1
+{txt} 14{com}.                 {c )-}                               
+{txt} 15{com}.                 if "`spec'" == "All_g02" {c -(} 
+{txt} 16{com}.                         global st_values `"k 1.69443 s 3.69198"'
+{txt} 17{com}.                         local gamma = 0.02
+{txt} 18{com}.                         local alpha = `"{c -(}alpha{c )-}"'
+{txt} 19{com}.                         local a = `"{c -(}a{c )-}"'
+{txt} 20{com}.                         local beta = `"{c -(}beta{c )-}"'
+{txt} 21{com}.                         local delta = `"{c -(}delta{c )-}"'
+{txt} 22{com}.                         local p_weight = 1
+{txt} 23{com}.                         local curv = 1
+{txt} 24{com}.                         local gift `"{c -(}gift{c )-}"'
+{txt} 25{com}.                         local stval_spec `"alpha 0.003 a 0.13 beta 1.16 delta 0.75 gift 5e-6"'
+{txt} 26{com}.                         local rou = 1
+{txt} 27{com}.                 {c )-}                               
+{txt} 28{com}.                 if "`spec'" == "All_fix088" {c -(} 
+{txt} 29{com}.                         global st_values `"k 1.69443 gamma 0.015 s 3.69198"'
+{txt} 30{com}.                         local gamma = `"{c -(}gamma{c )-}"'
+{txt} 31{com}.                         local alpha = `"{c -(}alpha{c )-}"'
+{txt} 32{com}.                         local a = `"{c -(}a{c )-}"'
+{txt} 33{com}.                         local beta = `"{c -(}beta{c )-}"'
+{txt} 34{com}.                         local delta = `"{c -(}delta{c )-}"'
+{txt} 35{com}.                         local p_weight = 1
+{txt} 36{com}.                         local curv = 0.88
+{txt} 37{com}.                         local gift `"{c -(}gift{c )-}"'
+{txt} 38{com}.                         local stval_spec `"alpha 0.003 a 0.13 beta 1.16 delta 0.75 gift 5e-6"'
+{txt} 39{com}.                         local rou = 1
+{txt} 40{com}.                 {c )-}
+{txt} 41{com}. 
+.                 if "`spec'" == "All_noround" {c -(} 
+{txt} 42{com}.                         global st_values `"k 1.69443 gamma 0.015 s 3.69198"'
+{txt} 43{com}.                         local gamma = `"{c -(}gamma{c )-}"'
+{txt} 44{com}.                         local alpha = `"{c -(}alpha{c )-}"'
+{txt} 45{com}.                         local a = `"{c -(}a{c )-}"'
+{txt} 46{com}.                         local beta = `"{c -(}beta{c )-}"'
+{txt} 47{com}.                         local delta = `"{c -(}delta{c )-}"'
+{txt} 48{com}.                         local p_weight = 1
+{txt} 49{com}.                         local curv = 1
+{txt} 50{com}.                         local gift `"{c -(}gift{c )-}"'
+{txt} 51{com}.                         local stval_spec `"alpha 0.003 a 0.13 beta 1.16 delta 0.75 gift 5e-6"'
+{txt} 52{com}.                         local rou = 0
+{txt} 53{com}.                 {c )-}
+{txt} 54{com}. 
+. 
+.                 if `rou' == 1 {c -(}
+{txt} 55{com}.                  local depvar buttonpresses_nearest100
+{txt} 56{com}.                  {c )-}
+{txt} 57{com}.                  if `rou' == 0 {c -(}
+{txt} 58{com}.                  local depvar buttonpresses_no_rounding
+{txt} 59{com}.                  {c )-}
+{txt} 60{com}.                 
+.         nl (`depvar' = -1/`gamma' * ln({c -(}k{c )-}/`k_scaler') + 1/ `gamma'*ln({c -(}s{c )-}/`s_scaler'+`gift'*0.4*gift_dummy + `beta'^delay_dummy*`delta'^delay_wks*`p_weight'^weight_dummy*prob*payoff_per_100^`curv'+`alpha'*payoff_charity_per_100+`a'*0.01*dummy_charity)) ///
+>         if inlist(treatment, ``sample''), initial($st_values `stval_spec') noc robust eps($precision)
+{txt} 61{com}. 
+.                                                 predict effort_hat
+{txt} 62{com}. 
+.                         capt eststo m_`m'
+{txt} 63{com}.                         capt estadd local sam `"`sample'"': m_`m'
+{txt} 64{com}.                         capt estadd local spec `spec': m_`m'
+{txt} 65{com}.                                 capt estadd scalar scaling_k = `k_scaler' : m_`m'
+{txt} 66{com}.                                 capt estadd scalar scaling_s = `s_scaler' : m_`m'
+{txt} 67{com}.                         local prediction = 1
+{txt} 68{com}.                         foreach treatment in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt} 69{com}.                                 sum effort_hat if treatment == "`treatment'", mean
+{txt} 70{com}.                                 capt estadd scalar pred_`prediction' = r(mean): m_`m'
+{txt} 71{com}.                                 local ++prediction
+{txt} 72{com}.                         {c )-}
+{txt} 73{com}.                         drop effort_hat
+{txt} 74{com}.                         local ++m
+{txt} 75{com}.         {c )-}
+{txt}(obs = 4406)
+
+Iteration 0:  residual SS = {res} 5.23e+09
+{txt}Iteration 1:  residual SS = {res} 3.88e+09
+{txt}Iteration 2:  residual SS = {res} 2.90e+09
+{txt}Iteration 3:  residual SS = {res} 2.30e+09
+{txt}Iteration 4:  residual SS = {res} 2.00e+09
+{txt}Iteration 5:  residual SS = {res} 1.89e+09
+{txt}Iteration 6:  residual SS = {res} 1.87e+09
+{txt}Iteration 7:  residual SS = {res} 1.87e+09
+{txt}Iteration 8:  residual SS = {res} 1.87e+09
+{txt}Iteration 9:  residual SS = {res} 1.87e+09
+{txt}Iteration 10:  residual SS = {res} 1.87e+09
+{txt}Iteration 11:  residual SS = {res} 1.87e+09
+{txt}Iteration 12:  residual SS = {res} 1.87e+09
+{txt}Iteration 13:  residual SS = {res} 1.87e+09
+{txt}Iteration 14:  residual SS = {res} 1.87e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     4406
+{txt}{col 54}R-squared     = {res}   0.8952
+{txt}{col 54}Adj R-squared = {res}   0.8950
+{txt}{col 54}Root MSE      = {res}  651.633
+{txt}{col 54}Res. dev.     = {res} 69593.87
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+          /k {c |}{col 14}{res}{space 2} 241393.7{col 26}{space 2} 44612.24{col 37}{space 1}    5.41{col 46}{space 3}0.000{col 54}{space 4} 153931.2{col 67}{space 3} 328856.1
+{txt}          /s {c |}{col 14}{res}{space 2} 98.60177{col 26}{space 2} 35.95091{col 37}{space 1}    2.74{col 46}{space 3}0.006{col 54}{space 4} 28.11989{col 67}{space 3} 169.0836
+{txt}       /gift {c |}{col 14}{res}{space 2}  .000303{col 26}{space 2}  .000189{col 37}{space 1}    1.60{col 46}{space 3}0.109{col 54}{space 4}-.0000675{col 67}{space 3} .0006734
+{txt}       /beta {c |}{col 14}{res}{space 2}  1.74479{col 26}{space 2} 1.136853{col 37}{space 1}    1.53{col 46}{space 3}0.125{col 54}{space 4}-.4840147{col 67}{space 3} 3.973595
+{txt}      /delta {c |}{col 14}{res}{space 2} .8336005{col 26}{space 2} .1670656{col 37}{space 1}    4.99{col 46}{space 3}0.000{col 54}{space 4} .5060679{col 67}{space 3} 1.161133
+{txt}      /alpha {c |}{col 14}{res}{space 2} .0069008{col 26}{space 2} .0199342{col 37}{space 1}    0.35{col 46}{space 3}0.729{col 54}{space 4}-.0321803{col 67}{space 3} .0459819
+{txt}          /a {c |}{col 14}{res}{space 2} .4317399{col 26}{space 2} .1564948{col 37}{space 1}    2.76{col 46}{space 3}0.006{col 54}{space 4} .1249314{col 67}{space 3} .7385484
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(obs = 4406)
+
+Iteration 0:  residual SS = {res} 2.51e+09
+{txt}Iteration 1:  residual SS = {res} 2.40e+09
+{txt}Iteration 2:  residual SS = {res} 2.05e+09
+{txt}Iteration 3:  residual SS = {res} 1.99e+09
+{txt}Iteration 4:  residual SS = {res} 1.87e+09
+{txt}Iteration 5:  residual SS = {res} 1.87e+09
+{txt}Iteration 6:  residual SS = {res} 1.87e+09
+{txt}Iteration 7:  residual SS = {res} 1.87e+09
+{txt}Iteration 8:  residual SS = {res} 1.87e+09
+{txt}Iteration 9:  residual SS = {res} 1.87e+09
+{txt}Iteration 10:  residual SS = {res} 1.87e+09
+{txt}Iteration 11:  residual SS = {res} 1.87e+09
+{txt}Iteration 12:  residual SS = {res} 1.87e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     4406
+{txt}{col 54}R-squared     = {res}   0.8953
+{txt}{col 54}Adj R-squared = {res}   0.8951
+{txt}{col 54}Root MSE      = {res} 651.3523
+{txt}{col 54}Res. dev.     = {res} 69590.07
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+          /k {c |}{col 14}{res}{space 2} .0001802{col 26}{space 2} .0000661{col 37}{space 1}    2.72{col 46}{space 3}0.006{col 54}{space 4} .0000505{col 67}{space 3} .0003098
+{txt}          /s {c |}{col 14}{res}{space 2} .2983298{col 26}{space 2}  .216378{col 37}{space 1}    1.38{col 46}{space 3}0.168{col 54}{space 4}  -.12588{col 67}{space 3} .7225396
+{txt}       /gift {c |}{col 14}{res}{space 2} 2.99e-06{col 26}{space 2} 2.52e-06{col 37}{space 1}    1.19{col 46}{space 3}0.236{col 54}{space 4}-1.95e-06{col 67}{space 3} 7.93e-06
+{txt}       /beta {c |}{col 14}{res}{space 2} .9498646{col 26}{space 2} 1.227192{col 37}{space 1}    0.77{col 46}{space 3}0.439{col 54}{space 4}-1.456049{col 67}{space 3} 3.355778
+{txt}      /delta {c |}{col 14}{res}{space 2} .6973273{col 26}{space 2}  .276769{col 37}{space 1}    2.52{col 46}{space 3}0.012{col 54}{space 4} .1547207{col 67}{space 3} 1.239934
+{txt}      /alpha {c |}{col 14}{res}{space 2} .0020463{col 26}{space 2} .0059949{col 37}{space 1}    0.34{col 46}{space 3}0.733{col 54}{space 4}-.0097068{col 67}{space 3} .0137994
+{txt}          /a {c |}{col 14}{res}{space 2} .0601161{col 26}{space 2}  .043424{col 37}{space 1}    1.38{col 46}{space 3}0.166{col 54}{space 4}-.0250169{col 67}{space 3}  .145249
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(obs = 4406)
+
+Iteration 0:  residual SS = {res} 1.90e+09
+{txt}Iteration 1:  residual SS = {res} 1.90e+09
+{txt}Iteration 2:  residual SS = {res} 1.89e+09
+{txt}Iteration 3:  residual SS = {res} 1.89e+09
+{txt}Iteration 4:  residual SS = {res} 1.88e+09
+{txt}Iteration 5:  residual SS = {res} 1.87e+09
+{txt}Iteration 6:  residual SS = {res} 1.87e+09
+{txt}Iteration 7:  residual SS = {res} 1.87e+09
+{txt}Iteration 8:  residual SS = {res} 1.87e+09
+{txt}Iteration 9:  residual SS = {res} 1.87e+09
+{txt}Iteration 10:  residual SS = {res} 1.87e+09
+{txt}Iteration 11:  residual SS = {res} 1.87e+09
+{txt}Iteration 12:  residual SS = {res} 1.87e+09
+{txt}Iteration 13:  residual SS = {res} 1.87e+09
+{txt}Iteration 14:  residual SS = {res} 1.87e+09
+{txt}Iteration 15:  residual SS = {res} 1.87e+09
+{txt}Iteration 16:  residual SS = {res} 1.87e+09
+{txt}Iteration 17:  residual SS = {res} 1.87e+09
+{txt}Iteration 18:  residual SS = {res} 1.87e+09
+{txt}Iteration 19:  residual SS = {res} 1.87e+09
+{txt}Iteration 20:  residual SS = {res} 1.87e+09
+{txt}Iteration 21:  residual SS = {res} 1.87e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     4406
+{txt}{col 54}R-squared     = {res}   0.8953
+{txt}{col 54}Adj R-squared = {res}   0.8951
+{txt}{col 54}Root MSE      = {res} 651.3759
+{txt}{col 54}Res. dev.     = {res} 69589.39
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpr~100{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} .0137605{col 26}{space 2} .0034458{col 37}{space 1}    3.99{col 46}{space 3}0.000{col 54}{space 4} .0070049{col 67}{space 3}  .020516
+{txt}          /k {c |}{col 14}{res}{space 2}  134.394{col 26}{space 2} 977.6018{col 37}{space 1}    0.14{col 46}{space 3}0.891{col 54}{space 4}-1782.198{col 67}{space 3} 2050.986
+{txt}          /s {c |}{col 14}{res}{space 2} 16.72593{col 26}{space 2} 34.89603{col 37}{space 1}    0.48{col 46}{space 3}0.632{col 54}{space 4}-51.68786{col 67}{space 3} 85.13973
+{txt}       /gift {c |}{col 14}{res}{space 2} .0000848{col 26}{space 2} .0001488{col 37}{space 1}    0.57{col 46}{space 3}0.569{col 54}{space 4}-.0002069{col 67}{space 3} .0003766
+{txt}       /beta {c |}{col 14}{res}{space 2}  1.20595{col 26}{space 2} 1.110699{col 37}{space 1}    1.09{col 46}{space 3}0.278{col 54}{space 4}-.9715798{col 67}{space 3}  3.38348
+{txt}      /delta {c |}{col 14}{res}{space 2}  .780024{col 26}{space 2} .2187145{col 37}{space 1}    3.57{col 46}{space 3}0.000{col 54}{space 4} .3512334{col 67}{space 3} 1.208815
+{txt}      /alpha {c |}{col 14}{res}{space 2} .0069759{col 26}{space 2} .0204607{col 37}{space 1}    0.34{col 46}{space 3}0.733{col 54}{space 4}-.0331374{col 67}{space 3} .0470891
+{txt}          /a {c |}{col 14}{res}{space 2} .3126918{col 26}{space 2} .2698204{col 37}{space 1}    1.16{col 46}{space 3}0.247{col 54}{space 4}-.2162921{col 67}{space 3} .8416757
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+(obs = 4406)
+
+Iteration 0:  residual SS = {res} 1.86e+09
+{txt}Iteration 1:  residual SS = {res} 1.86e+09
+{txt}Iteration 2:  residual SS = {res} 1.86e+09
+{txt}Iteration 3:  residual SS = {res} 1.86e+09
+{txt}Iteration 4:  residual SS = {res} 1.86e+09
+{txt}Iteration 5:  residual SS = {res} 1.86e+09
+{txt}Iteration 6:  residual SS = {res} 1.86e+09
+{txt}Iteration 7:  residual SS = {res} 1.86e+09
+{txt}Iteration 8:  residual SS = {res} 1.86e+09
+{txt}Iteration 9:  residual SS = {res} 1.86e+09
+{txt}Iteration 10:  residual SS = {res} 1.86e+09
+{txt}Iteration 11:  residual SS = {res} 1.86e+09
+
+{txt}Nonlinear regression{col 54}Number of obs = {res}     4406
+{txt}{col 54}R-squared     = {res}   0.8956
+{txt}{col 54}Adj R-squared = {res}   0.8954
+{txt}{col 54}Root MSE      = {res} 650.7892
+{txt}{col 54}Res. dev.     = {res} 69581.45
+
+{txt}{hline 13}{c TT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+{col 14}{c |}{col 26}    Robust
+{col 1}buttonpres~g{col 14}{c |}      Coef.{col 26}   Std. Err.{col 38}      t{col 46}   P>|t|{col 54}     [95% Con{col 67}f. Interval]
+{hline 13}{c +}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+      /gamma {c |}{col 14}{res}{space 2} .0158589{col 26}{space 2}   .00401{col 37}{space 1}    3.95{col 46}{space 3}0.000{col 54}{space 4} .0079973{col 67}{space 3} .0237206
+{txt}          /k {c |}{col 14}{res}{space 2} 1.053047{col 26}{space 2} 8.919484{col 37}{space 1}    0.12{col 46}{space 3}0.906{col 54}{space 4}-16.43363{col 67}{space 3} 18.53973
+{txt}          /s {c |}{col 14}{res}{space 2} 3.133618{col 26}{space 2} 7.633025{col 37}{space 1}    0.41{col 46}{space 3}0.681{col 54}{space 4}-11.83096{col 67}{space 3} 18.09819
+{txt}       /gift {c |}{col 14}{res}{space 2} .0000206{col 26}{space 2} .0000423{col 37}{space 1}    0.49{col 46}{space 3}0.626{col 54}{space 4}-.0000623{col 67}{space 3} .0001034
+{txt}       /beta {c |}{col 14}{res}{space 2} 1.146363{col 26}{space 2} 1.219105{col 37}{space 1}    0.94{col 46}{space 3}0.347{col 54}{space 4}-1.243697{col 67}{space 3} 3.536423
+{txt}      /delta {c |}{col 14}{res}{space 2} .7645234{col 26}{space 2} .2460102{col 37}{space 1}    3.11{col 46}{space 3}0.002{col 54}{space 4} .2822196{col 67}{space 3} 1.246827
+{txt}      /alpha {c |}{col 14}{res}{space 2} .0031653{col 26}{space 2} .0105644{col 37}{space 1}    0.30{col 46}{space 3}0.764{col 54}{space 4}-.0175462{col 67}{space 3} .0238768
+{txt}          /a {c |}{col 14}{res}{space 2}  .139994{col 26}{space 2} .1396874{col 37}{space 1}    1.00{col 46}{space 3}0.316{col 54}{space 4}-.1338635{col 67}{space 3} .4138516
+{txt}{hline 13}{c BT}{hline 11}{hline 11}{hline 9}{hline 8}{hline 13}{hline 12}
+(option yhat assumed; fitted values)
+
+{com}. * Report results
+. 
+. // levelsof treatment, l(treatments)
+. local tablenote1
+{txt}
+{com}. local tablenote2
+{txt}
+{com}. foreach t in "1.1" "1.2" "1.3" "1.4" "2" "3.1" "3.2" "4.1" "4.2" "6.1" "6.2" {c -(}
+{txt}  2{com}.         sum buttonpresses_no_rounding if treatment == "`t'", mean
+{txt}  3{com}.         local avg = int(`r(mean)')
+{txt}  4{com}.         local tablenote1 `"`tablenote1' ''`t''': `avg', "'
+{txt}  5{com}. {c )-}
+{txt}
+{com}. 
+. 
+. 
+. capt esttab _all using "${c -(}main{c )-}/output/estimation_results_AT4_`rounding'", nogaps replace ///
+> csv label b(a8) se(a8) r2(4) ar2(4) nostar ///
+> scalars("sam Sample" "mod Cost function" "spec Specification" "scaling_k Coef. k scaled up by" "scaling_s Coef. s scaled up by" "rss RSS" "rmse Root MSE" "msr Residual mean square" ///
+> "dev Residual deviance" "ic \# iterations" "pred_1 Predicted effort 1.1" /// 
+>  "pred_2 Predicted effort 1.2" "pred_3 Predicted effort 1.3" "pred_4 Predicted effort 1.4" "pred_5 Predicted effort 2" ///
+>  "pred_6 Predicted effort 3.1" "pred_7 Predicted effort 3.2" "pred_8 Predicted effort 4.1" ///
+>  "pred_9 Predicted effort 4.2" "pred_10 Predicted effort 6.1" "pred_11 Predicted effort 6.2") ///
+>  nonotes addnotes("Sample average effort: `tablenote1'" "Sample average log effort: `tablenote2'")
+{txt}
+{com}. 
+. eststo clear
+{txt}
+{com}. 
+. log close
+      {txt}name:  {res}<unnamed>
+       {txt}log:  {res}C:/Users/Avner/Dropbox/forecastExp/Data Analysis/Analysis/behavioral/output/analyses.smcl
+  {txt}log type:  {res}smcl
+ {txt}closed on:  {res} 4 Apr 2017, 15:37:43
+{txt}{.-}
+{smcl}
+{txt}{sf}{ul off}

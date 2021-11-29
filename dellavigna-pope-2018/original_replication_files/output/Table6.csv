@@ -1,0 +1,8 @@
+"Table 6 Panel A - Pi results"
+"25th",0.049,0.11,1.7
+"median",1.5,2.3,12
+"75th",5.4,7.6,24
+""
+"Table 6 Panel B - Lambda estimation and predictions"
+"lambda","1.73","2.76"
+"ci","(0.2,4.9)","(2,4.4)"

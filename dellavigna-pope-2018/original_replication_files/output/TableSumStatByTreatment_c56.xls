@@ -1,0 +1,19 @@
+tx_order	treatmentname	mean_forecast	sd_ind_forecast
+1	"No Payment"		
+2	"1c PieceRate"		
+3	"10c PieceRate"		
+4	"4c PieceRate"	2056.51	120.8661
+5	"Very Low Pay"	1657.433	262.0035
+6	"1c RedCross"	1893.601	202.2004
+7	"10c RedCross"	1996.587	196.7466
+8	"Gift Exchange"	1709.462	207.1248
+9	"1c 2Wks"	1932.668	142.0275
+10	"1c 4Wks"	1895.192	162.5413
+11	"Gain 40c"	1955.288	149.9003
+12	"Loss 40c"	2002.471	143.5705
+13	"Gain 80c"	2007.212	131.9343
+14	"Prob.01 $1"	1966.692	253.4303
+15	"Prob.5 2c"	1941.385	179.2717
+16	"Social Comp"	1877.346	209.4832
+17	"Ranking"	1849.885	234.2823
+18	"Task Signif"	1756.942	230.1548
