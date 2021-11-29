@@ -15,7 +15,7 @@ This repository contains one folder for each paper whose structural estimates we
 
 ### What Papers Does Your Code Replicate?
 
-Right now, this repository contains only the notebooks to replicate one table in Bruhin, Fehr and Schunk (*Journal of the European Economic Association*, 2019) and one table in Augenblick and Rabin (*Review of Economic Studies*, 2019). However, we will upload more notebooks soon. We have already written and tested the code to replicate the structural estimates in the following papers: 
+Right now, this repository contains only the notebooks to replicate one table in Bruhin, Fehr and Schunk (*Journal of the European Economic Association*, 2019) and one table in Augenblick and Rabin (*Review of Economic Studies*, 2019). However, we will upload more notebooks soon. We have already written and tested the code to replicate the structural estimates in the following papers:
 
 - Augenblick, Ned and Matthew Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", *Review of Economic Studies*, 86(3): 941&ndash;975
 	- Estimation Method: Maximum Likelihood
@@ -28,10 +28,10 @@ Right now, this repository contains only the notebooks to replicate one table in
 	- Source of Heterogeneity: Random Parameters
 - DellaVigna, Stefano and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 85(2): 1029&ndash;1069
 	- Estimation Method: Minimum Distance (+ Boostrapped SEs), Non-Linear-Least-Squares
-	- Source of Heterogeneity: No Noise in Minimum Distance, Random Parameters in NLLS			
+	- Source of Heterogeneity: No Noise in Minimum Distance, Random Parameters in NLLS
 
 We chose these papers to replicate because (a) they were recently published in general interest journals and, as such, they constitute the state-of-the-art in structural behavioral economics, (b) the replication files are available on the journal's website, and (c) they allow us to explore a wide array of different estimation methods and sources of heterogeneity (the two building blocks of a structural model, as discussed in Sections 4.1 and 4.2 of DellaVigna 2018 and detailed in the list above).
- 
+
 ### Where Can I Learn More About Python?
 
 - [Learn Python in Y Minutes](https://learnxinyminutes.com/docs/python/)
@@ -48,7 +48,7 @@ We chose these papers to replicate because (a) they were recently published in g
 - [Computational Economics for PhDs](https://floswald.github.io/NumericalMethods/) (Florian Oswald)
 
 ### Where Can I Learn More About Structural Models?
- 
+
  - DellaVigna, Stefano, 2018, ["Structural Behavioral Economics"](http://snunnari.github.io/dellavigna.pdf), *Handbook of Behavioral Economics Vol. 1*, North-Holland, 613&ndash;723
  - Holmes, Thomas and Holger Sieg, 2015, ["Structural Estimation in Urban Economics"](http://snunnari.github.io/holmes.pdf), *Handbook of Regional and Urban Economics Vol. 5*, Elsevier, 69-114
  - Keane, Michael, Petra Todd, and Kenneth Wolpin, 2011, ["The Structural Estimation of Behavioral Models: Discrete Choice Dynamic Programming Methods and Applications"](http://snunnari.github.io/keane.pdf), *Handbook of Labor Economics Vol. 4*, Elsevier, 331&ndash;461
