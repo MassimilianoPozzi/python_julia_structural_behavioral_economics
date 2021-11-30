@@ -28,7 +28,7 @@ Right now, this repository contains only the notebooks to replicate one table in
 	- Source of Heterogeneity: Random Parameters
 - DellaVigna, Stefano and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 85(2): 1029&ndash;1069
 	- Estimation Method: Generalized Method of Moments (+ Boostrapped SEs), Non-Linear-Least-Squares
-	- Source of Heterogeneity: No Noise in Minimum Distance, Random Parameters in NLLS
+	- Source of Heterogeneity: No Noise in GMM, Random Parameters in NLLS
 
 We chose these papers to replicate because (a) they were recently published in general interest journals and, as such, they constitute the state-of-the-art in structural behavioral economics, (b) the replication files are available on the journal's website, and (c) they allow us to explore a wide array of different estimation methods and sources of heterogeneity (the two building blocks of a structural model, as discussed in Sections 4.1 and 4.2 of DellaVigna 2018 and detailed in the list above).
 
