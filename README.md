@@ -15,7 +15,7 @@ This repository contains one folder for each paper whose structural estimates we
 
 ### What Papers Does Your Code Replicate?
 
-Right now, this repository contains only the notebooks to replicate one table in Bruhin, Fehr and Schunk (*Journal of the European Economic Association*, 2019) and one table in Augenblick and Rabin (*Review of Economic Studies*, 2019). However, we will upload more notebooks soon. We have already written and tested the code to replicate the structural estimates in the following papers:
+Right now, this repository contains only the notebooks to replicate one table in Bruhin, Fehr and Schunk (*Journal of the European Economic Association*, 2019) and Augenblick and Rabin (*Review of Economic Studies*, 2019). However, we will upload more notebooks soon. We have already written and tested the code to replicate the structural estimates in the following papers:
 
 - Augenblick, Ned and Matthew Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", *Review of Economic Studies*, 86(3): 941&ndash;975
 	- Estimation Method: Maximum Likelihood
