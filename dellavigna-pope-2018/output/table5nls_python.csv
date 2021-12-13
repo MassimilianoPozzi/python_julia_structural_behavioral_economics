@@ -1,0 +1,9 @@
+,parameters,power_est,power_se,exp_est,exp_se
+0,Curvature γ of cost function,21.194,7.3990,0.0156,0.00415
+1,Level k of cost of effort,5.95e-72,3.33e-70,1.71e-16,1.49e-15
+2,Intrinsic motivation s,1.38e-6,4.93e-6,3.72e-6,9.16e-6
+3,Social preferences α,0.0132,0.0295,0.004,0.011
+4,Warm glow coefficient a,0.2628,0.2869,0.143,0.143
+5,Gift exchange Δs,3.17e-5,8.00e-5,2.35e-5,4.82e-5
+6,Present bias β,1.6123,2.055,1.24,1.3
+7,(Weekly) discount factor δ,0.75,0.2923,0.75,0.24
