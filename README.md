@@ -15,18 +15,18 @@ This repository contains one folder for each paper whose structural estimates we
 
 ### What Papers Does Your Code Replicate?
 
-Right now, this repository contains only the notebooks to replicate one table in Bruhin, Fehr and Schunk (*Journal of the European Economic Association*, 2019) and Augenblick and Rabin (*Review of Economic Studies*, 2019). However, we will upload more notebooks soon. We have already written and tested the code to replicate the structural estimates in the following papers:
+Right now, this repository contains only the notebooks to replicate one table in Bruhin, Fehr and Schunk (*Journal of the European Economic Association*, 2019), Augenblick and Rabin (*Review of Economic Studies*, 2019) and DellaVigna and Pope (*Review of Economic Studies*, 2018). However, we will upload more notebooks soon. We have already written and tested the code to replicate the structural estimates in the following papers:
 
-- Augenblick, Ned and Matthew Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", *Review of Economic Studies*, 86(3): 941&ndash;975
+- Ned Augenblick and Matthew Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", *Review of Economic Studies*, 86(3): 941&ndash;975
 	- Estimation Method: Maximum Likelihood
 	- Source of Heterogeneity: Implementation Errors
-- Bruhin, Adrian, Ernst Fehr, and Daniel Schunk, 2019, "The Many Faces of Human Sociality: Uncovering the Distribution and Stability of Social Preferences", *Journal of the European Economic Association*, 17(4): 1025&ndash;1069
+- Adrian Bruhin, Ernst Fehr, and Daniel Schunk, 2019, "The Many Faces of Human Sociality: Uncovering the Distribution and Stability of Social Preferences", *Journal of the European Economic Association*, 17(4): 1025&ndash;1069
 	- Estimation Method: Maximum Likelihood, SEAM/EM-Algorithm
 	- Source of Heterogeneity: Random Utility, Finite Mixture
-- DellaVigna, Stefano, John A. List, Ulrike Malmendier, and Gautam Rao, 2017, "Voting To Tell Others", *Review of Economic Studies*, 84(1): 143&ndash;181
+- Stefano DellaVigna, John A. List, Ulrike Malmendier, and Gautam Rao, 2017, "Voting To Tell Others", *Review of Economic Studies*, 84(1): 143&ndash;181
 	- Estimation Method: Simulated Method of Moments
 	- Source of Heterogeneity: Random Parameters
-- DellaVigna, Stefano and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 85(2): 1029&ndash;1069
+- Stefano DellaVigna and Devin Pope, 2018, "What Motivates Effort? Evidence and Expert Forecasts", *Review of Economic Studies*, 85(2): 1029&ndash;1069
 	- Estimation Method: Generalized Method of Moments (+ Boostrapped SEs), Non-Linear-Least-Squares
 	- Source of Heterogeneity: No Noise in GMM, Random Parameters in NLLS
 
