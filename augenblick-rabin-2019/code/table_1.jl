@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.0
 
 using Markdown
 using InteractiveUtils
@@ -49,18 +49,18 @@ begin
 
 # 1. Data Cleaning and Data Preparation
 
-# We import the relevant dataset containing observations for all 100 individuals. We then construct the primary sample used for the aggregate estimates. This sample consists of 72 individuals whose individual estimates converged. To guarantee consistency with the authors' results we run their "03MergeIndMLEAndConstructMainSample.do" do file to create a csv file named "ind_wid_to_drop.csv" containing the identifiers of the individuals to keep.
+# We import the relevant dataset containing observations for all 100 individuals. We then construct the primary sample used for the aggregate estimates. This sample consists of 72 individuals whose individual estimates converged. To guarantee consistency with the authors' results we run their "03MergeIndMLEAndConstructMainSample.do" do file to create a csv file named "ind_to_keep.csv" containing the identifiers of the individuals to keep.
 	
 
 dt = DataFrame(load(raw"../input/decisions_data.dta")) # full sample
-data_drop = readdlm(raw"../input/ind_wid_to_drop.csv",',',header=true) # import csv with ID of subjects to keep
+data_keep = readdlm(raw"../input/ind_to_keep.csv",',',header=true) # import csv with ID of subjects to keep
 	
 	
 # drop subjects whose IDs are not listed in the data_drop dataframe (28 individuals)
 # this is the primary sample for the aggregate estimates (72 individuals)
 	
 	
-dt = dt[[i for i=1:length(dt.wid) if dt.wid[i] in(data_drop[1])],:]
+dt = dt[[i for i=1:length(dt.wid) if dt.wid[i] in(data_keep[1][:,1])],:]
 	
 
 # We remove observations when a bonus was offered and create dummy variables that will be useful for estimation. pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter alpha). ind_effort10 and ind_effort110 are two dummy variables equal to one if the subject completed 10 or 110 tasks respectively and they are used for the Tobit correction when computing the likelihood
@@ -186,34 +186,42 @@ begin
 # adj is a correction for the degree of freedoms and the number of clusters. inv_hessian is the inverse of the hessian of the negative log-likelihood evaluated at the minimum. grad_con is is a 5x5 matrix of gradient contributions. It is computed as the sum over all clusters of the outer product of the sum of the single observation gradient evaluated in the minimum for all observations of an individual cluster.
 
 # Define an auxiliary function.
-# This function takes as input a dataset and a scalar and returns a dataframe containing only observations for individual whose ID is equal to that scalar
+# This function takes as input a dataset and a scalar and returns a single observation dataframe
 
-function getind(dataset,wid)
-    dataset_ind = dataset[dataset.wid .== wid,:]
+function getobs(dataset, obs)
+    dataset_ind = dataset[obs, :]
     return dataset_ind
 end
 
 # Define the function that computes the matrix of individual gradient contribution 
 
-function gradcontr(dataset)
-    G = 0.0
+function gradcontr(dataset, parameters)
+    G = zeros(length(parameters), length(parameters))
+	vsingle_grad = []
 		
-    for wid in unique(dataset.wid)      # loop over the individuals IDs
-        dt_ind = getind(dataset,wid)    # dataframe for individual wid
+    for obs=1:length(dataset.wid)       # loop over all observations
+        dt_ind = getobs(dataset, obs)    # dataframe for observation 'obs'
 			
 		# define the arguments that are needed to compute the negative log likelihood
-	    mle_arg_ind=[dt_ind.netdistance,dt_ind.wage,dt_ind.today,dt_ind.prediction, dt_ind.pb,dt_ind.effort,dt_ind.ind_effort10,dt_ind.ind_effort110]
+	    mle_arg_ind=[[dt_ind.netdistance],[dt_ind.wage],[dt_ind.today],[dt_ind.prediction], [dt_ind.pb],[dt_ind.effort],[dt_ind.ind_effort10],[dt_ind.ind_effort110]]
 
 		# gradient of the negloglike function evaluated at the minimum
 
-         gradcontr_ind = ForwardDiff.gradient(x->negloglike(x,mle_arg_ind),restable_1) 
-		
-	# G is the sum over individuals of the outer product of gradcontr_ind
-			
-    G = G .+ (gradcontr_ind * gradcontr_ind') 
+         single_grad = ForwardDiff.gradient(x->negloglike(x, mle_arg_ind), parameters) 
+		 
+		append!(vsingle_grad, [single_grad])
 			
 	end
 		
+	dg = DataFrame()
+	dg.wid = dataset.wid
+	dg.gradient = vsingle_grad
+	
+	for wid in unique(dataset.wid)                        # loop over individuals' IDs
+		ind_grad = sum(dg[(dg[:wid] .== wid), :gradient]) # sum gradients element wise
+		G .+= (ind_grad*ind_grad')
+	end
+			
 	return G
 end
 	
@@ -231,7 +239,7 @@ hess_inv = inv(hessian)                      # inverse of the hessian
 
 # Compute the matrix of gradient contribution
 
-grad_contribution = gradcontr(dt)
+grad_contribution = gradcontr(dt, restable_1)
 
 # Compute the adjustment for degree of freedoms and number of clusters
 
