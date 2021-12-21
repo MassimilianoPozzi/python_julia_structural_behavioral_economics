@@ -39,6 +39,7 @@ We chose these papers to replicate because (a) they were recently published in g
 - [Python for Econometrics, Statistics and Numerical Analysis](https://www.kevinsheppard.com/teaching/python/notes/) (Kevin Sheppard)
 - [PyEcon](https://pyecon.org)
 - [Python Data Science Handbook](https://jakevdp.github.io/PythonDataScienceHandbook/)
+- [Coding for Economists](https://aeturrell.github.io/coding-for-economists)
 
 ### Where Can I Learn More About Julia?
 
