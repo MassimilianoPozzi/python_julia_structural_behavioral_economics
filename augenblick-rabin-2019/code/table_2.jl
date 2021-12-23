@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.0
 
 using Markdown
 using InteractiveUtils
@@ -22,20 +22,22 @@ using Distributions
 end
 
 # ╔═╡ d08aaa10-268f-11ec-067f-4322e82ba779
-# Replication of Augenblick and Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks"
+# Augenblick and Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", Table 2
 
 # ╔═╡ fee9d980-268f-11ec-3901-3705290b7c24
 # Authors: 
+
 # Massimiliano Pozzi (Bocconi University, pozzi.massimiliano@studbocconi.it)
 # Salvatore Nunnari (Bocconi University, https://snunnari.github.io, salvatore.nunnari@unibocconi.it)
 
-# ╔═╡ f8c1b410-51b4-11ec-1d65-11df2949bf23
-# This notebook works with both Neptune and Pluto; the "begin" and "end" tags in each cell are necessary for Pluto notebooks but do not play any role in Neptune 
+# The code in this Jupyter notebook performs the individual estimates to replicate columns 1, 2, 3, 4 of Table 2
 
-# ╔═╡ f80c94e0-51b4-11ec-3ab7-15d27457308f
 # This notebook was tested with the following packages versions:
 
 # Pozzi: julia 1.6.1, Pluto 0.14.7, Neptune 0.14.0, Distributions 0.25.17, DataFrames 1.2.2, Optim 1.4.1, CSV 0.9.5
+
+# ╔═╡ f8c1b410-51b4-11ec-1d65-11df2949bf23
+# This notebook works with both Neptune and Pluto; the "begin" and "end" tags in each cell are necessary for Pluto notebooks but do not play any role in Neptune 
 
 # ╔═╡ 0de27c80-51b5-11ec-05e9-a5b37469b0c7
 # To import a new package (es. StatFiles) use this cell. Change the name inside the brackets to change Pkg
@@ -47,14 +49,14 @@ begin
 
 # 1. Data Cleaning and Data Preparation
 
-# We import the relevant dataset containing observations for all 100 individuals. We then remove observations when a bonus was offered and create dummy variables that will be useful for estimation. pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter α). ind_effort10 and ind_effort110 are two dummy variables equal to one if the subject completed 10 or 110 tasks respectively and they are used for the Tobit correction when computing the likelihood.
+# We import the dataset containing observations for all 100 individuals. We then remove observations when a bonus was offered and create dummy variables that will be useful for estimation: pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter α), ind_effort10 and ind_effort110 are equal to one if the subject completed 10 or 110 tasks respectively (and they are used for the Tobit correction when computing the likelihood)
 
 dt = DataFrame(load(raw"../input/decisions_data.dta")) # full sample
 dt = dt[dt.bonusoffered .!=1,:]  # remove observations when a bonus was offered
 
-# create dummy variables
+# We remove observations when a bonus was offered and create the following dummy variables that will be useful for estimation: pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter α); ind_effort10 and ind_effort110 are equal to one if, respectively, the subject completed 10 or 110 tasks (and they are used for the Tobit correction when computing the likelihood)
 
-dt.pb = dt.workdone1 ./ 10       # pb dummy variable. workdone1 can either be 10 or 0, so dividing the variable by 10 creates our dummy
+dt.pb = dt.workdone1 ./ 10 # pb dummy variable. workdone1 can either be 10 or 0, so                                dividing the variable by 10 creates our dummy
 
 dt.ind_effort10  = dt.effort .== 10    # ind_effort10 dummy
 dt.ind_effort110 = dt.effort .== 110   # ind_effort110 dummy	
@@ -62,6 +64,10 @@ dt.ind_effort110 = dt.effort .== 110   # ind_effort110 dummy
 end;
 
 # ╔═╡ 74270f10-51b5-11ec-2edd-af650c9bec6b
+# 2. Define the Model and the Likelihood (Section 3 in the Paper)
+
+# For a more detailed explanation of the model please refer to the python notebook
+
 # Define the criterion function to minimize. This function computes the negative log likelihood of observing the choices made by the agents. We first compute the predicted choice that is found by solving the agents' utility maximization problem. We then assume that the observed effort is distributed as a Gaussian with mean the predicted choice and a given value of sigma (to be estimated). We then work out the likelihood of observing the effort found in the data, take the log and the negative of it to define our objective function.
 
 # parameters:
@@ -302,7 +308,9 @@ end;
 # ╔═╡ 8617c2c0-55d2-11ec-007f-315cd7023c9f
 # 4. Print and Save Estimation Results
 
-# From the initial 100 subjects the authors drop those whose estimates Stata were not able to find, took longer than 200 iterations to converge or were outliers (identified by a grubbs test). Since we are using a different programming language and a different minimization algorithm (in our case gradient-free) we manage to compute and find the estimates for all 100 individuals (prior to the elimination of the outliers). Since their criterion to drop the subjects cannot be applied in our case, we decided to show the results first considering only the subset of individuals used by the authors, identified by running their "03MergeIndMLEAndConstructMainSample" do.file and then show the results we obtained.
+# From the initial 100 subjects, the authors drop those subjects whose estimates their Stata algorithm was unable to find, took longer than 200 iterations to converge, or were outliers (identified by a grubbs test). Since we are using a different programming language and a different minimization algorithm (which, in our case, is gradient-free), we managed to find estimates for all 100 individuals. Below, we show results for both the subset of individuals considered by the authors (which we identified by running their "03MergeIndMLEAndConstructMainSample.do" file) and the whole sample.
+
+# First, we show results for the subset of individuals considered by the authors.
 
 # ╔═╡ 861774a0-55d2-11ec-23d0-2feb0b638bc2
 begin
@@ -529,7 +537,6 @@ end
 # ╠═d08aaa10-268f-11ec-067f-4322e82ba779
 # ╠═fee9d980-268f-11ec-3901-3705290b7c24
 # ╠═f8c1b410-51b4-11ec-1d65-11df2949bf23
-# ╠═f80c94e0-51b4-11ec-3ab7-15d27457308f
 # ╠═0de27c80-51b5-11ec-05e9-a5b37469b0c7
 # ╠═feb1b280-268f-11ec-1574-e5037552b641
 # ╠═fe9ddc60-268f-11ec-112a-59ea860b2c81
