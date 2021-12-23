@@ -24,20 +24,22 @@ using FiniteDiff
 end
 
 # ╔═╡ 0c4e6562-267b-11ec-2ca3-bbbd9a335a0d
-# Replication of Augenblick and Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks"
+# Augenblick and Rabin, 2019, "An Experiment on Time Preference and Misprediction in Unpleasant Tasks", Table 1
 
 # ╔═╡ 3c1a1d20-267b-11ec-03dd-2b946e7960e3
 # Authors: 
+
 # Massimiliano Pozzi (Bocconi University, pozzi.massimiliano@studbocconi.it)
 # Salvatore Nunnari (Bocconi University, https://snunnari.github.io, salvatore.nunnari@unibocconi.it)
 
-# ╔═╡ c0908a20-4b8e-11ec-374c-9f6e5b07e54d
-# This notebook works with both Neptune and Pluto; the "begin" and "end" tags in each cell are necessary for Pluto notebooks but do not play any role in Neptune 
+# The code in this Jupyter notebook performs the aggregate estimates to replicate column 1 of Table 1
 
-# ╔═╡ ce630d80-4b8e-11ec-18e0-4592534f71ef
 # This notebook was tested with the following packages versions:
 
 # Pozzi: julia 1.6.1, Pluto 0.14.7, Neptune 0.14.0, Distributions 0.25.17, DataFrames 1.2.2, Optim 1.4.1, CSV 0.9.5, ForwardDiff 0.10.20
+
+# ╔═╡ c0908a20-4b8e-11ec-374c-9f6e5b07e54d
+# This notebook works with both Neptune and Pluto; the "begin" and "end" tags in each cell are necessary for Pluto notebooks but do not play any role in Neptune 
 
 # ╔═╡ 01bac3e0-267c-11ec-1a92-c5ff23e97f0e
 # To import a new package (es. StatFiles) use this cell. Change the name inside the brackets to change Pkg
@@ -49,10 +51,9 @@ begin
 
 # 1. Data Cleaning and Data Preparation
 
-# We import the relevant dataset containing observations for all 100 individuals. We then construct the primary sample used for the aggregate estimates. This sample consists of 72 individuals whose individual estimates converged. To guarantee consistency with the authors' results we run their "03MergeIndMLEAndConstructMainSample.do" do file to create a csv file named "ind_to_keep.csv" containing the identifiers of the individuals to keep.
-	
+# We import the dataset containing the choices of all 100 individuals who participated to the experiment. To guarantee consistency with the authors' results, we then construct the primary sample used for the aggregate estimates. This sample consists of 72 individuals whose individual parameter estimates converged in less than 200 iterations when using the authors' Stata algorithm. In particular, we run the "03MergeIndMLEAndConstructMainSample.do" file provided by the authors. This script creates a file named "ind_to_keep.csv" which contains the identifiers of the individuals to keep.	
 
-dt = DataFrame(load(raw"../input/decisions_data.dta")) # full sample
+dt = DataFrame(load(raw"../input/decisions_data.dta"))             # full sample
 data_keep = readdlm(raw"../input/ind_to_keep.csv",',',header=true) # import csv with ID of subjects to keep
 	
 	
@@ -62,9 +63,7 @@ data_keep = readdlm(raw"../input/ind_to_keep.csv",',',header=true) # import csv 
 	
 dt = dt[[i for i=1:length(dt.wid) if dt.wid[i] in(data_keep[1][:,1])],:]
 	
-
-# We remove observations when a bonus was offered and create dummy variables that will be useful for estimation. pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter alpha). ind_effort10 and ind_effort110 are two dummy variables equal to one if the subject completed 10 or 110 tasks respectively and they are used for the Tobit correction when computing the likelihood
-	
+# We remove observations when a bonus was offered and create the following dummy variables that will be useful for estimation: pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter α); ind_effort10 and ind_effort110 are equal to one if, respectively, the subject completed 10 or 110 tasks (and they are used for the Tobit correction when computing the likelihood)
 
 dt = dt[dt.bonusoffered .!=1,:]  # remove observations when a bonus was offered
 dt.pb = dt.workdone1 ./ 10       # pb dummy variable. workdone1 can either be 10 or 0, so dividing the variable by 10 creates our dummy
@@ -75,6 +74,10 @@ dt.ind_effort110 = dt.effort .== 110   # ind_effort110 dummy
 end;
 
 # ╔═╡ 2079e14e-47f9-11ec-1620-4b0af35d1fe0
+# 2. Define the Model and the Likelihood (Section 3 in the Paper)
+
+# For a more detailed explanation of the model please refer to the python notebook
+
 # Define the criterion function to minimize. This function computes the negative log likelihood of observing the choices made by the agents. We first compute the predicted choice that is found by solving the agents' utility maximization problem. We then assume that the observed effort is distributed as a Gaussian with mean the predicted choice and a given value of sigma (to be estimated). We then work out the likelihood of observing the effort found in the data, take the log and the negative of it to define our objective function.
 
 # parameters:
@@ -179,11 +182,13 @@ end;
 begin
 
 # Compute the individual cluster robust standard errors. 
+# For a more detailed explanation on how to compute cluster robust standard errors please refer to the python notebook.
+	
 # The formula is the following:
 
-# adj * (inv_hessian * grad_con * inv_hessian). 
+# adj * (inv_hessian * G * inv_hessian). 
 
-# adj is a correction for the degree of freedoms and the number of clusters. inv_hessian is the inverse of the hessian of the negative log-likelihood evaluated at the minimum. grad_con is is a 5x5 matrix of gradient contributions. It is computed as the sum over all clusters of the outer product of the sum of the single observation gradient evaluated in the minimum for all observations of an individual cluster.
+# adj is a correction for the degree of freedoms and the number of clusters. inv_hessian is the inverse of the hessian of the negative log-likelihood evaluated at the minimum. G is is a 5x5 matrix of gradient contributions. It is computed as the sum over all clusters of the outer product of the sum of the single observation gradient evaluated in the minimum for all observations of an individual cluster.
 
 # Define an auxiliary function.
 # This function takes as input a dataset and a scalar and returns a single observation dataframe
@@ -199,7 +204,7 @@ function gradcontr(dataset, parameters)
     G = zeros(length(parameters), length(parameters))
 	vsingle_grad = []
 		
-    for obs=1:length(dataset.wid)       # loop over all observations
+    for obs=1:length(dataset.wid)        # loop over all observations
         dt_ind = getobs(dataset, obs)    # dataframe for observation 'obs'
 			
 		# define the arguments that are needed to compute the negative log likelihood
@@ -287,7 +292,7 @@ parameters_name = ["Present Bias β",
                    "Proj Task Reduction α",
                    "Sd of error term σ"]
 
-table_1 = DataFrame() # empty dataframe
+table_1 = DataFrame()
 table_1.parameters = parameters_name
 table_1.estimates = round.(restable_1,digits=3)
 table_1.standarderr = round.(se_cluster,digits=3)
@@ -313,7 +318,6 @@ end
 # ╠═0c4e6562-267b-11ec-2ca3-bbbd9a335a0d
 # ╠═3c1a1d20-267b-11ec-03dd-2b946e7960e3
 # ╠═c0908a20-4b8e-11ec-374c-9f6e5b07e54d
-# ╠═ce630d80-4b8e-11ec-18e0-4592534f71ef
 # ╠═01bac3e0-267c-11ec-1a92-c5ff23e97f0e
 # ╠═3bf57e20-267b-11ec-35eb-a983675c3502
 # ╠═0f4aa740-4b8f-11ec-1749-df8a9c57903d
