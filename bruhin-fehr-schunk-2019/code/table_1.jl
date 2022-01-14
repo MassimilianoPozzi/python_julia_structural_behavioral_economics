@@ -72,7 +72,9 @@ indicators_y = hcat(dt1.s_y,dt1.r_y,dt1.q,dt1.v)
 end;
 
 # ╔═╡ 56a26400-422c-11ec-3599-77a4d3d0e180
-# Define the function to minimize. This is the negative of the log likelihood of observing our data given the parameters of the model. For more information refer to equation (4) and (5) in the paper or the python notebook in this repository
+# Define the function to minimize. This is the negative of the log likelihood of observing our data given the parameters of the model.
+
+# For more information we refer the reader to equation (4) and (5) in the paper or to the python notebook in this repository
 
 # v is the vector of parameters (θ,σ)
 # y is the choice of the player
@@ -118,7 +120,7 @@ end
 # ╔═╡ 1baa58c0-4494-11ec-1794-6b4d74f6812b
 begin
 
-# This cell computes the aggregate estimate for session 1 using the BFGS algortihm. We do not provide the analytical gradient since the one computed numerically by the algorithm is precise enough for this problem
+# This cell computes the aggregate estimate for session 1 using the BFGS algortihm. We do not provide the analytical gradient since the one computed by the algorithm is precise enough for this problem
 
 sol = optimize(ll,v0,method=BFGS(),iterations = 10000,store_trace=true, extended_trace=true, autodiff=:forward)
 res_s1 = Optim.minimizer(sol) # estimates
@@ -129,6 +131,9 @@ end
 
 # ╔═╡ f576544e-3d55-11ec-009e-5ddcc502108b
 # Compute the individual cluster robust standard errors. 
+
+# For a more detailed explanation on how to compute cluster robust standard errors we refer the reader to the python notebook or to David A. Freedman, 2006, "On The So-Called 'Huber Sandwich Estimator' and 'Robust Standard Errors'", (The American Statistician 60:4, 299-302)
+
 # The formula is the following:
 
 # adj * (inv_hessian * grad_con * inv_hessian). 
@@ -183,14 +188,16 @@ begin
 
 # Compute the cluster robust standard errors. 
 
-# This is the code to use the inverse of the hessian stored in the BFGS algorithm. We use the one computed using the Pkg ForwardDiff but they are basically the same 
+# This is the code to use the inverse of the hessian stored in the BFGS algorithm. We use the one computed using the Pkg ForwardDiff but they should be the same since we used the option autodiff=:forward 
 
 inverse_hessian_s1 = sol.trace[end].metadata["~inv(H)"] 
 
-# Compute the hessian numerically using the ForwardDiff package 
+# Compute the hessian using the ForwardDiff package 
+	
 inv_hess_num = inv(ForwardDiff.hessian(ll,res_s1)) 
 
 # degree of freedom and cluster adjustment
+	
 adj = (length(dt1.self_x)-1) / (length(dt1.self_x)-length(res_s1)) * (160/159)
 
 grad_contribution = congradloglike(res_s1,dt1.choice_x,dt1.self_x,dt1.other_x,dt1.self_y,dt1.other_y,indicators_x,indicators_y,dt1.sid)

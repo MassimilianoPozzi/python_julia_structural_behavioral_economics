@@ -990,20 +990,23 @@ dif = criterion(parameters_authors, rand_vec) - criterion(be, rand_vec)
 end
 
 # ╔═╡ 3f8c7950-38cb-11ec-1cf1-e79ce14eb776
-# Compute the Jacobian using the ForwardDiff package. We will NOT use this jacobian to compute the standard errors since we get two columns of zeroes for the gradient with respect to mu_eps and sigma_eps and so the matrix is not invertible. This problem is either due to how python computes the jacobian or to mistakes in the function we wrote to compute the simulated moments. By using the same parameters and the same random vectors we see in fact very small differences (max difference of 0.002, many other way smaller or equal to zero. note that all moments are probabilities) between our and the authors' simulated moments. We checked but did not spot any mistake in the function we wrote. The dissimilarities between simulated moments could be because of different "default options" between julia and matlab's operators (eg rounding, how to take means with nans etc).
-# To use our jacobian we would need to take only the first 18 parameters, so using jac_julia[1:18,1:18] instead of jac_matlab
+# Below we compute the Jacobian using ForwardDiff but we do not use this jacobian to compute the standard errors since we get two columns of zeroes for the gradient with respect to mu_eps and sigma_eps and so the matrix is not invertible. This problem is either due to (1) mistakes in the function we wrote to compute the simulated moments or (2) the way in which julia computes the jacobian. Regarding the former possibility: using the same parameters and the same random vectors as the authors, we do see very small differences between ours and the authors' simulated moments (the largest difference being only 0.002); after inspecting it carefully, we cannot attribute these small discrepancies to mistakes in the function we wrote but it is possible that they are due to different default options between julia and matlab's operators (e.g., in rounding). Regarding the latter possibility: in julia, we computed the jacobian using the ForwardDiff Pkg while the authors used the Jacobianest function in Matlab; from a comment in the documentation of this Matlab function,  we learnt that "the error term on finite differences jacobian's estimates has a second order component, but also some 4th and 6th order terms in it" and the Jacobianest function uses Romberg extrapolation to improve the estimate, but ForwardDiff uses automatic differentiation so it should return a very precise jacobian.
 
 jac_julia = ForwardDiff.jacobian(x->voteSimEndogenousVoting_vary(x, rand_vec_used), be);
 
 # ╔═╡ 1f237b10-3e1f-11ec-2dde-092bc72714fb
-# We load the jacobian evaluated in our best estimates computed in Matlab using the "Jacobianest" function (the same used by the authors). The problem with the jacobian computed above could be because (citing a comment in the "Jacobianest" function): "The error term on these (finite differences jacobian) estimates has a second order component, but also some 4th and 6th order terms in it". The Matlab code in "Jacobianest" then uses Romberg extrapolation to improve the estimate. Here we are using though automatic differentiation that should return a very precise jacobian.
+# We load the jacobian evaluated in our best estimates computed in Matlab using the "Jacobianest" function (the same used by the authors).
 
 jac_matlab = readdlm(raw"../input/jac_mat.csv",',', header=false);
 
 # ╔═╡ 7a5da8fe-3b00-11ec-1f2c-7fc389373302
 begin
 
-# Compute the standard errors. For more informations on the formula for the standard errors refer to part B of the appendix. I use the same notation as in their matlab code. sim_adjust is a scalar, DFDY_CSD_jacest is our jacobian (101x20 matrix) evaluated in the minimum, W is the weighting matrix (101x101 diagonal matrix), VCcontrol is the variance-covariance matrix of the empirical moments (a 101x101 matrix).
+# Compute the standard errors.
+	
+#For more informations on the formula for the standard errors we refer the reader to part B of the appendix or to the python notebook.
+	
+# We use the same notation as in their matlab code. sim_adjust is a scalar, DFDY_CSD_jacest is our jacobian (101x20 matrix) evaluated in the minimum, W is the weighting matrix (101x101 diagonal matrix), VCcontrol is the variance-covariance matrix of the empirical moments (a 101x101 matrix).
 
 Jm_Js = 13197 / sim_voters # nr. empirical obs / nr. simulated obs
 sim_adjust = 1 + Jm_Js 

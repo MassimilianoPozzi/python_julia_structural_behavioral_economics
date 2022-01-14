@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.0
 
 using Markdown
 using InteractiveUtils
@@ -104,7 +104,9 @@ dt.logbuttonpresses_nearest_100 = log.(dt.buttonpresses_nearest_100)
 end;
 
 # ╔═╡ 082f8ca0-279f-11ec-07c3-838f8c01603e
-# 2. Define the Model and the estimation technique (Section 2 in the Paper)
+# 2. Define the Model and the estimation technique
+
+# For a more detailed explanation of the model we refer the reader to our python notebook or to section 2 in the paper.
 
 # The model is one of costly effort, where an agent needs to choose the optimal effort (in this case the number of buttons pressed in a 10 minute session) to solve a simple tradeoff problem between disutility of effort and consumption utility derived from the consequent payment. On top of this simple problem the authors use 18 different treatments to examine the effects of standard monetary incentives, behavioral factors like social preferences and reference dependence and non-monetary incentives. 
 
@@ -197,6 +199,9 @@ bp52 = sol52.param
 sp52 = stderror(sol52) 
 	
 end;
+
+# ╔═╡ 05e3eb00-7527-11ec-3380-cdcafa241aaa
+# We find slightly different estimates compared to the ones obtained by the authors, but we see also see that different minimization algorithms implemented with the same programming language (julia) result in different estimates and/or values of the objective function, so it is not surprising that there are small discrepancies between our estimates and the authors' estimates (the authors use the Gauss-Newton minimization algorithm implemented in Stata). At the same time, the differences are small in absolute value (and limited to the NLSS estimation method, there are no discrepancies when using GMM) and the estimated values of k and s are always statistically indistinguishable from 0. More importantly, the economic implications of the estimated parameters and the qualitative conclusions on what motivates effort in the experiment are unaffected by the choice of programming language and minimization algorithm. We report the results we obtained with the curve_fit function since this also returns an estimate for the variance-covariance matrix for the parameters
 
 # ╔═╡ 66dd6fb0-2b32-11ec-2a0c-5593db218da8
 begin
@@ -310,6 +315,8 @@ end;
 begin
 
 # Create the arrays that will be the columns for table 5. Create the dataframe for table 5 and save it as a csv file
+	
+# Point estimates for power case do not coincide precisely as explained above. Standard errors do not coincide precisely because of the differences in the point estimates and because we leave here non-robust standard errors provided by curve_fit. To see an implementation of the formula for robust standard errors please refer to the python or julia notebooks for table_1 of augenblick-rabin or table_1 of bruhin-fehr-schunk. The formula is the same as in the cited notebooks without considering the clustering at the individual level.
 
 params_name = ["Curvature γ of cost function", "Level k of cost of effort", "Intrinsic motivation s","Social preferences α","Warm glow coefficient a","Gift exchange Δs", "Present bias β","(Weekly) discount factor δ"]
 
@@ -564,6 +571,8 @@ end;
 begin
 
 # Create the dataframe relative to table 6 and save it as a csv file
+	
+# There are some differences in the standard errors since we leave here non robust standard errors provided by curve_fit. Point estimates for the power cost function are again a little different from the authors', while they are the same for the exponential cost function
 
 t6 = DataFrame()
 
@@ -599,6 +608,7 @@ end
 # ╠═531e546e-27a0-11ec-091f-ab9fb76190b2
 # ╠═7b307e00-27a7-11ec-2070-9f6d80983e32
 # ╠═d153ea60-590c-11ec-09a4-d7d6bffb1d5a
+# ╠═05e3eb00-7527-11ec-3380-cdcafa241aaa
 # ╠═66dd6fb0-2b32-11ec-2a0c-5593db218da8
 # ╠═27a92130-2c64-11ec-2c22-c55b0094de30
 # ╠═592baf2e-599f-11ec-3f47-1782a76c828d

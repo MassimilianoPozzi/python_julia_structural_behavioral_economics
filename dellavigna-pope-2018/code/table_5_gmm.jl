@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.14.7
+# v0.14.0
 
 using Markdown
 using InteractiveUtils
@@ -40,11 +40,11 @@ begin
 
 # 1. Data Cleaning and Data Preparation
 
-# We import the relevant dataset containing data on the number of buttonpresses in the different treatments and for a given piece rate. We then compute the rounded mean for each treatment.
+# We import the relevant dataset containing data on the number of buttonpresses in the different treatments and for different piece rates wage that the participants received when completing the task. We then compute the means for the treatments that are used to compute the minimum distance estimates.
 
 dt = DataFrame(load(raw"../input/mturk_clean_data_short.dta"))
 
-emp_moments = round.(combine(groupby(dt, :treatment), :buttonpresses => mean)[2],digits=0)
+emp_moments = round.(combine(groupby(dt, :treatment), :buttonpresses => mean)[2], digits=0)
 	
 end;
 
@@ -92,7 +92,10 @@ end
 end
 
 # ╔═╡ ced0482e-2a66-11ec-06ca-0b961f35a057
-# Define the function to estimate the parameters using minimum distance. 
+# For a more detailed explanation of the model we refer the reader to the python notebook
+
+# Define the function to estimate the parameters using minimum distance:
+
 # There are two specifications: exponential cost function and power cost function
 # The parameters are found by imposing the theoretical means found from the agent's problem being equal to the empirical means found in the data.
 # E11 up to E42 are the relevant empirical moments
@@ -234,6 +237,8 @@ end
 begin
 
 # Print our results for Table 5 (GMM estimates)
+	
+# Standard errors are different since the seed we used for the bootstrap procedure is different from the one used by the authors since random generation across softwares/languages is not easily replicated (each software uses its own algorithm)
 
 sd_exp = [k_exp_sd,g_exp_sd,s_exp_sd,alpha_exp_sd,a_exp_sd,s_ge_exp_sd,beta_exp_sd,delta_exp_sd]
 

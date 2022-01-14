@@ -94,6 +94,10 @@ indicators_y2 = hcat(dt2.s_y,dt2.r_y,dt2.q,dt2.v)
 end;
 
 # ╔═╡ 47094410-4ea6-11ec-2865-47e35e532cf1
+# For a more detailed explanation on the model we refer the reader to the python notebook.
+
+# Below, we explain each step of the algoritm, but for a more rigorous discussion please refer to Dempster, A.P, N. M. Laird and D. B. Rubin, 1977, "Maximum Likelihood from Incomplete Data via the EM Algorithm", Journal of the Royal Statistical Society, Series B (Methodological), 39(1): 1&ndash;38 and to McLachlan, Geoffrey, Sharon Lee, and Suren Rathnayake, 2019, "Finite Mixture Models", Annual Review of Statistics and Its Application, 6: 355&ndash;378.
+
 # Define the component density function. This would be f(θ_k, σ_k; X, Y, C_i) above for a specific set of parameters (θ_k, σ_k).
 # v is the vector of parameters (θ_k, σ_k)
 # y is the choice of the player
@@ -327,6 +331,8 @@ end;
 # ╔═╡ 2c418020-4c44-11ec-24f8-13b7ff1ffcdf
 begin
 
+# For a more detailed explanation on how to compute cluster robust standard errors we refer the reader to the python notebook or to David A. Freedman, 2006, "On The So-Called 'Huber Sandwich Estimator' and 'Robust Standard Errors'", The American Statistician, 60:4, 299-302).
+	
 # Compute the individual cluster robust standard errors. 
 # The formula is the following:
 
@@ -515,7 +521,7 @@ begin
 
 # print the results for session 1. Note that the parameters will not be necessarily in this order: strongly altruistic, moderately altruistic, behindness averse. It depends on the starting conditions of the mixtures and on how the algorithm moves.
 	
-# Small differences in the standard errors are due to the differences in the point estimates 
+# There are some discrepancies between the standard errors we obtain and those in Table 2 of the paper. The differences in the SEs for the point estimates of Session 1 are due to small differences in the point estimates themselves which are likely due to the use of a different programming language (which, for example, employs different defaults for rounding numbers). The differences in the SEs for the mixture probabilities of Sessions 1 and 2 are probably due to the fact that our code takes a shortcut and computes the gradient of a subject's log likelihood instead of computing the sum of the gradients of each single choice's log likelihood for the same subject (which is the theoretically correct way of computing the SEs; see, for example, the discussion in the paper cited above). The reason for taking this shortcut is that the theoretically correct object is complex to compute, given the nature of the log likelihood function, and that the shortcut actually returns the same SEs as the authors' for the other parameters. 
 
 param_names = ["π: Type's shares in the population",
 			   "α: Weight on other's payoff when behind",
@@ -543,8 +549,6 @@ end
 begin
 
 # print the results for session 2
-	
-# The differences in the standard errors for the mixture probabilities are perhaps due to the fact that in the code we took the gradient of the individual log likelihood instead of the sum of the gradient of single observations log likelihood for an individual (like it should be from the formula for clustered standard errors). This last step is complex given the nature of the log likelihood so we preferred the first method. We also obtain the same standard errors for the other parameters so we are not sure the reason was the computation of the matrix of gradient contributions
 
 table22 = DataFrame()
 table22.param_name = param_names
