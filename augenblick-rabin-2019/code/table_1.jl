@@ -51,7 +51,7 @@ begin
 
 # 1. Data Cleaning and Data Preparation
 
-# We import the dataset containing the choices of all 100 individuals who participated to the experiment. To guarantee consistency with the authors' results, we then construct the primary sample used for the aggregate estimates. This sample consists of 72 individuals whose individual parameter estimates converged in less than 200 iterations when using the authors' Stata algorithm. In particular, we run the "03MergeIndMLEAndConstructMainSample.do" file provided by the authors. This script creates a file named "ind_to_keep.csv" which contains the identifiers of the individuals to keep.	
+# We import the dataset containing the choices of all 100 individuals who participated to the experiment. To guarantee consistency with the authors' results, we then construct the primary sample used for the aggregate estimates. This sample consists of 72 individuals whose individual parameter estimates converged in less than 200 iterations when using the authors' Stata algorithm. In particular, we run the "03MergeIndMLEAndConstructMainSample.do" file provided by the authors. This script creates a file named "ind_to_keep.csv" which contains the identifiers of the individuals to keep.
 
 dt = DataFrame(load(raw"../input/decisions_data.dta"))             # full sample
 data_keep = readdlm(raw"../input/ind_to_keep.csv",',',header=true) # import csv with ID of subjects to keep
@@ -63,7 +63,7 @@ data_keep = readdlm(raw"../input/ind_to_keep.csv",',',header=true) # import csv 
 	
 dt = dt[[i for i=1:length(dt.wid) if dt.wid[i] in(data_keep[1][:,1])],:]
 	
-# We remove observations when a bonus was offered and create the following dummy variables that will be useful for estimation: pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter α); ind_effort10 and ind_effort110 are equal to one if, respectively, the subject completed 10 or 110 tasks (and they are used for the Tobit correction when computing the likelihood)
+# We remove observations when a bonus was offered and create the following dummy variables that will be useful for estimation: pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter &alpha;); ind_effort10 and ind_effort110 are equal to one if, respectively, the subject completed 10 or 110 tasks (and they are used for the Tobit correction when computing the likelihood).
 
 dt = dt[dt.bonusoffered .!=1,:]  # remove observations when a bonus was offered
 dt.pb = dt.workdone1 ./ 10       # pb dummy variable. workdone1 can either be 10 or 0, so dividing the variable by 10 creates our dummy
@@ -182,7 +182,7 @@ end;
 begin
 
 # Compute the individual cluster robust standard errors. 
-# For a more detailed explanation on how to compute cluster robust standard errors please refer to the python notebook.
+# For a more detailed explanation on how to compute cluster robust standard errors we refer the readero to the python notebook or to David A. Freedman, 2006, "On The So-Called 'Huber Sandwich Estimator' and 'Robust Standard Errors'", (The American Statistician 60:4, 299-302)
 	
 # The formula is the following:
 

@@ -54,8 +54,6 @@ begin
 dt = DataFrame(load(raw"../input/decisions_data.dta")) # full sample
 dt = dt[dt.bonusoffered .!=1,:]  # remove observations when a bonus was offered
 
-# We remove observations when a bonus was offered and create the following dummy variables that will be useful for estimation: pb is equal to one if the subject completed 10 mandatory tasks on subject-day (this is used to estimate the projection bias parameter α); ind_effort10 and ind_effort110 are equal to one if, respectively, the subject completed 10 or 110 tasks (and they are used for the Tobit correction when computing the likelihood)
-
 dt.pb = dt.workdone1 ./ 10 # pb dummy variable. workdone1 can either be 10 or 0, so                                dividing the variable by 10 creates our dummy
 
 dt.ind_effort10  = dt.effort .== 10    # ind_effort10 dummy
@@ -148,7 +146,7 @@ end
 # ╔═╡ ce679cb0-51b5-11ec-39ba-3f65d7b1ce33
 # Estimation
 
-# We define the function that computes the individual estimates for column 1 up to 4 of table 2. There are four specifications to consider: the first column uses the entire sample, the second only when the date of decision is less than 4, the third one when the date decision is from time 4 onwards and the fourth one uses the full sample but estimates also the projection bias parameter.
+# We define the function that computes the individual estimates for columns 1, 2, 3 and 4 of Table 2. There are four specifications to consider: the first column uses the entire sample, the second column uses only observations for which the decision date is less than 4, the third column uses only observations for which the decision date is from time 4 onwards, and the fourth column uses the full sample but estimates also the projection bias parameter.
 
 
 # Define an auxiliary function.
@@ -368,7 +366,7 @@ end
 # ╔═╡ 9087d8e0-55e0-11ec-35df-21166bf459e5
 begin
 
-# We now look at our estimates. We only remove outliers using a grubbs test with alpha at 1% since we found estimates for all individuals. There is no package in Julia that computes the grubbs test for us, so we need to write a function ourselves:
+# Second, we present results including our estimates for those subjects the Stata algorithm was unable to converge in less than 200 iterations. As the authors do, we remove outliers using a grubbs test with alpha at 1%. There is no package in Julia that computes the grubbs test for us, so we need to write a function ourselves:
 
 function grubbs_test(y::Vector{Float64}, alpha)
 	
