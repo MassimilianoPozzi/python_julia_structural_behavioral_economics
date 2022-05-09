@@ -2,7 +2,7 @@
 
 ### Authors
 
-- Massimiliano Pozzi (Bocconi University, pozzi.massimiliano@studbocconi.it)
+- Massimiliano Pozzi (Bocconi University, pozzi.massimiliano@unibocconi.it)
 - Salvatore Nunnari (Bocconi University, https://snunnari.github.io, salvatore.nunnari@unibocconi.it)
 
 ### About
